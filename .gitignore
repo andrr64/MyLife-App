@@ -3,3 +3,4 @@ test.sql
 *bin
 *obj
 *.idea
+*.vscode
