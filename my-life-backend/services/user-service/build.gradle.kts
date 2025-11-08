@@ -46,6 +46,9 @@ dependencies {
 	implementation("org.flywaydb:flyway-core:11.16.0")
 	runtimeOnly("org.flywaydb:flyway-database-postgresql") // Penting untuk Postgres modern
 
+
+	// https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-security
+	implementation("org.springframework.boot:spring-boot-starter-security")
 	// =================================
 }
 
