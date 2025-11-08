@@ -35,6 +35,13 @@ dependencies {
 	annotationProcessor("org.projectlombok:lombok")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
+	// Added by Andreas
+	// =================================
+	// https://mvnrepository.com/artifact/me.paulschwarz/spring-dotenv
+	implementation("me.paulschwarz:spring-dotenv:4.0.0")
+
+	// =================================
 }
 
 tasks.withType<Test> {

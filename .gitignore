@@ -2,3 +2,4 @@ docs
 test.sql
 *bin
 *obj
+*.idea

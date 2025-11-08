@@ -6,10 +6,10 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=root
     ports:
-      - 5432:5432
+      - 5000:5432 # artinya di laptop pakai 5000, di container sebagai 5432
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - mylife-postgresql:/var/lib/postgresql/data
 volumes:
-  postgres_data:
-
+  mylife-postgresql:
+    external: true
 # for testing only bruh..
