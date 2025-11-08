@@ -1,11 +1,69 @@
 {
   "version": 3,
   "targets": {
-    "net9.0": {}
+    "net9.0": {
+      "MyLifeApi.Application/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v9.0",
+        "dependencies": {
+          "MyLifeApi.Domain": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/MyLifeApi.Application.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/MyLifeApi.Application.dll": {}
+        }
+      },
+      "MyLifeApi.Domain/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v9.0",
+        "compile": {
+          "bin/placeholder/MyLifeApi.Domain.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/MyLifeApi.Domain.dll": {}
+        }
+      },
+      "MyLifeApi.Infrastructure/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v9.0",
+        "dependencies": {
+          "MyLifeApi.Application": "1.0.0",
+          "MyLifeApi.Domain": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/MyLifeApi.Infrastructure.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/MyLifeApi.Infrastructure.dll": {}
+        }
+      }
+    }
   },
-  "libraries": {},
+  "libraries": {
+    "MyLifeApi.Application/1.0.0": {
+      "type": "project",
+      "path": "../MyLifeApi.Application/MyLifeApi.Application.csproj",
+      "msbuildProject": "../MyLifeApi.Application/MyLifeApi.Application.csproj"
+    },
+    "MyLifeApi.Domain/1.0.0": {
+      "type": "project",
+      "path": "../MyLifeApi.Domain/MyLifeApi.Domain.csproj",
+      "msbuildProject": "../MyLifeApi.Domain/MyLifeApi.Domain.csproj"
+    },
+    "MyLifeApi.Infrastructure/1.0.0": {
+      "type": "project",
+      "path": "../MyLifeApi.Infrastructure/MyLifeApi.Infrastructure.csproj",
+      "msbuildProject": "../MyLifeApi.Infrastructure/MyLifeApi.Infrastructure.csproj"
+    }
+  },
   "projectFileDependencyGroups": {
-    "net9.0": []
+    "net9.0": [
+      "MyLifeApi.Application >= 1.0.0",
+      "MyLifeApi.Domain >= 1.0.0",
+      "MyLifeApi.Infrastructure >= 1.0.0"
+    ]
   },
   "packageFolders": {
     "C:\\Users\\Andreas\\.nuget\\packages\\": {},
@@ -39,7 +97,17 @@
       "frameworks": {
         "net9.0": {
           "targetAlias": "net9.0",
-          "projectReferences": {}
+          "projectReferences": {
+            "D:\\Repository\\My-Life-App\\MyLifeApi\\MyLifeApi.Application\\MyLifeApi.Application.csproj": {
+              "projectPath": "D:\\Repository\\My-Life-App\\MyLifeApi\\MyLifeApi.Application\\MyLifeApi.Application.csproj"
+            },
+            "D:\\Repository\\My-Life-App\\MyLifeApi\\MyLifeApi.Domain\\MyLifeApi.Domain.csproj": {
+              "projectPath": "D:\\Repository\\My-Life-App\\MyLifeApi\\MyLifeApi.Domain\\MyLifeApi.Domain.csproj"
+            },
+            "D:\\Repository\\My-Life-App\\MyLifeApi\\MyLifeApi.Infrastructure\\MyLifeApi.Infrastructure.csproj": {
+              "projectPath": "D:\\Repository\\My-Life-App\\MyLifeApi\\MyLifeApi.Infrastructure\\MyLifeApi.Infrastructure.csproj"
+            }
+          }
         }
       },
       "warningProperties": {
