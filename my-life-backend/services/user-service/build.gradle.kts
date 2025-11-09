@@ -58,6 +58,11 @@ dependencies {
 
 	// https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt-jackson
 	runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.13.0")
+
+
+	// dev only
+	// https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-devtools
+	developmentOnly("org.springframework.boot:spring-boot-devtools")
 	// =================================
 }
 
