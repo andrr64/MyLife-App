@@ -29,6 +29,13 @@ public class ApiResponse<T> {
                 .build();
     }
 
+    public static <T> ApiResponse<T> success(T data) {
+        return ApiResponse.<T>builder()
+                .data(data)
+                .message("Ok")
+                .build();
+    }
+
     // 3. Error standar
     public static <T> ApiResponse<T> error(HttpStatus status, String message) {
         return ApiResponse.<T>builder()

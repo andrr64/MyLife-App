@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.mylife.user_service.dto.request.LoginRequest;
 import com.mylife.user_service.dto.request.RegisterRequest;
+import com.mylife.user_service.dto.response.ApiResponse;
 import com.mylife.user_service.dto.response.AuthResponse;
 import com.mylife.user_service.service.AuthService;
 
@@ -22,14 +23,14 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(@Valid @RequestBody RegisterRequest request) {
+    public ApiResponse<String> register(@Valid @RequestBody RegisterRequest request) {
         authService.register(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully");
+        return ApiResponse.success("User registered successfully.");
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
+    public ApiResponse<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         AuthResponse response = authService.login(request);
-        return ResponseEntity.ok(response);
+        return ApiResponse.success(response);
     }
 }
