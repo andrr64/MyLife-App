@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import com.mylife.user_service.dto.request.LoginRequest;
 import com.mylife.user_service.dto.request.RegisterRequest;
 import com.mylife.user_service.dto.response.AuthResponse;
+import com.mylife.user_service.exception.EmailAlreadyException;
 import com.mylife.user_service.model.User;
 import com.mylife.user_service.repository.UserRepository;
 import com.mylife.user_service.service.AuthService;
@@ -27,13 +28,12 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     public void register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already registered");
+            throw new EmailAlreadyException();
         }
         User user = new User();
         user.setEmail(request.getEmail());
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         user.setFullName(request.getFullName());
-
         userRepository.save(user);
     }
 
