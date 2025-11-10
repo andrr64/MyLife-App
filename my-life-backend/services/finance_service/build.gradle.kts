@@ -53,7 +53,7 @@ dependencies {
 	// runtime 
 
 	// dev
-
+	developmentOnly("org.springframework.boot:spring-boot-devtools")
 	//==============================
 
 }
