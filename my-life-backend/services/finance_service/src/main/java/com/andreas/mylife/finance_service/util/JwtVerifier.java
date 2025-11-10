@@ -1,5 +1,7 @@
 package com.andreas.mylife.finance_service.util;
 
+import javax.crypto.SecretKey;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -13,13 +15,17 @@ public class JwtVerifier {
     private String secretKey;
 
     // Validasi dan ekstrak user email langsung
-    public String validateTokenAndGetUsername(String token) {
+    public String validateTokenAndGetUserId(String token) {
         return Jwts.parser()
-                .verifyWith(Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretKey)))
+                .verifyWith(getSignInKey())
                 .build()
                 .parseSignedClaims(token)
                 .getPayload()
-                .getSubject(); // Mengembalikan email user jika valid, error jika tidak
+                .getSubject(); // Mengembalikan userId (String)
     }
 
+    private SecretKey getSignInKey() {
+        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
+        return Keys.hmacShaKeyFor(keyBytes);
+    }
 }

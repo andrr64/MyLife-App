@@ -18,39 +18,30 @@ import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
-public class JwtAuthenticationFilter extends OncePerRequestFilter{
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtVerifier jwtVerifier;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-
         String authHeader = request.getHeader("Authorization");
-
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            // Kalau tidak ada token, lanjut saja (nanti ditolak di SecurityConfig jika
-            // butuh auth)
+        if (authHeader == null || !authHeader.startsWith("Bearer")) {
             filterChain.doFilter(request, response);
             return;
         }
-
         try {
-            String token = authHeader.substring(7); // Hapus tulisan "Bearer "
-            String username = jwtVerifier.validateTokenAndGetUsername(token);
-
-            // Jika token valid, kita buat kartu akses sementara untuk request ini
-            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(username, null,
+            String token = authHeader.substring(7); // Hapus "Bearer "
+            String userId = jwtVerifier.validateTokenAndGetUserId(token);
+            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                    userId, // Ini adalah userId (String)
+                    null,
                     new ArrayList<>());
-
             // Simpan kartu akses di SecurityContext
             SecurityContextHolder.getContext().setAuthentication(authentication);
-
         } catch (Exception e) {
-            // Token tidak valid/expired. Jangan set authentication.
-            // Nanti akan otomatis ditolak 403 oleh Spring Security.
-            System.out.println("Token invalid: " + e.getMessage());
+            System.out.println("Invalid token: " + e.getMessage());
         }
-
         filterChain.doFilter(request, response);
     }
+
 }

@@ -35,11 +35,9 @@ public class JwtUtil {
 
     public String generateToken(User user) {
         Map<String, Object> extraClaims = new HashMap<>();
-        // Casting UUID ke String agar aman saat di-serialize ke JSON
-        extraClaims.put("userId", user.getId().toString());
+        extraClaims.put("email", user.getEmail());
         extraClaims.put("role", "USER"); // Contoh nambah claim role
-
-        return buildToken(extraClaims, user.getEmail(), jwtExpiration);
+        return buildToken(extraClaims, user.getId().toString(), jwtExpiration);
     }
 
     private String buildToken(Map<String, Object> extraClaims, String subject, long expiration) {
