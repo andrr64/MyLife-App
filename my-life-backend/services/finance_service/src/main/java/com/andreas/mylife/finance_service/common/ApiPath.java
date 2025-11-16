@@ -10,4 +10,5 @@ public final class ApiPath {
     public static final String  TX_TYPE = BASE_API + "/transaction-type";
     public static final String TX_CATEGORY = BASE_API + "/transaction-category";
     public static final String ACCOUNT = BASE_API + "/account";
+    public static final String TRANSACTION = BASE_API + "/transaction";
 }

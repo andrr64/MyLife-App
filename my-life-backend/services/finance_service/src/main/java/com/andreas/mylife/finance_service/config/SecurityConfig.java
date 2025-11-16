@@ -28,6 +28,7 @@ public class SecurityConfig {
                         .requestMatchers(ApiPath.TX_TYPE + "/**").authenticated()
                         .requestMatchers(ApiPath.TX_CATEGORY + "/**").authenticated()
                         .requestMatchers(ApiPath.ACCOUNT + "/**").authenticated()
+                        .requestMatchers(ApiPath.TRANSACTION + "/**").authenticated()
                         .anyRequest().permitAll())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
