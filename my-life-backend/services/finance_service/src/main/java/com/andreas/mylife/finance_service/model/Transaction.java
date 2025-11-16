@@ -41,19 +41,13 @@ public class Transaction {
     @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal amount;
 
-    @Column(name = "tx_category_id", nullable = false)
-    private Long categoryId;
-
-    @Column(name = "account_id", nullable = false)
-    private Long accountId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tx_category_id")
+    private TxCategory category;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "tx_category_id", insertable = false, updatable = false)
-    private TxCategory txCategory;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "account_id", insertable = false, updatable = false)
-    private Account account;
+    @JoinColumn(name = "account_id")
+    private Account account; // mappedBy= account
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)

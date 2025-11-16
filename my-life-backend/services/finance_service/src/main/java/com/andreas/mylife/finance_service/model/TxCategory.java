@@ -4,12 +4,9 @@ import java.util.UUID;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -30,10 +27,9 @@ public class TxCategory {
     @Column(nullable = false, unique = true, length = 64)
     private String name;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "tx_type_id", nullable = false)
-    private TxType txType;
-
     @Column(name = "user_id", nullable = false)
     private UUID userId;
+
+    @Column(name = "effect", nullable = false)
+    private boolean effect;
 }

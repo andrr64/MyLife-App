@@ -1,24 +1,22 @@
 package com.andreas.mylife.finance_service.repository;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import com.andreas.mylife.finance_service.dto.projection.TxCategoryProjection;
 import com.andreas.mylife.finance_service.model.TxCategory;
 
 public interface TxCategoryRepository extends JpaRepository<TxCategory, Long> {
     @Query(value = """
-            SELECT
-                id,
-                name,
-                user_id AS userId
-            FROM global_tx_type
-            WHERE name ILIKE CONCAT('%', :name, '%')
-            LIMIT 1
+                SELECT *
+                FROM tx_categories
+                WHERE
+                    name ILIKE CONCAT('%', :name, '%')
+                    AND user_id = :user_id
+                LIMIT 1
             """, nativeQuery = true)
-    Optional<TxCategoryProjection> findGlobalCategoryByName(@Param("name") String name);
-
+    Optional<TxCategory> findCategoryByNameLike(@Param("name") String name, @Param("user_id") UUID userId);
 }

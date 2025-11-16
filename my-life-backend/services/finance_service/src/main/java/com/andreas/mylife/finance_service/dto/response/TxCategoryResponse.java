@@ -1,14 +1,12 @@
 package com.andreas.mylife.finance_service.dto.response;
 
-import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Builder
 public class TxCategoryResponse {
     private Long id;
     private String name;
-    private TxTypeResponse txType;
+    private boolean effect;
 }
