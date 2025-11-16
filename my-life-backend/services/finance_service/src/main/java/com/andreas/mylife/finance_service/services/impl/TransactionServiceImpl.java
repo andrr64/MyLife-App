@@ -89,7 +89,9 @@ public class TransactionServiceImpl implements TransactionService {
 
         // 2. Validasi Hubungan Kategori vs Tipe
         // Gak boleh pilih Kategori 'Gaji' (INCOME) tapi tipenya EXPENSE
-        if (!category.getType().name().equals(type.name())) {
+        if (!category.getType().name().equals(type.name())) { // jika tipe kategori != tipe transaksi, misal tipe
+                                                              // kategori = INCOME dan tipe transaksi = EXPENSE maka ada
+                                                              // kesalahan
             throw new BusinessValidationException(
                     String.format("Category '%s' is type %s, but transaction type is %s",
                             category.getName(), category.getType(), type));
@@ -131,6 +133,9 @@ public class TransactionServiceImpl implements TransactionService {
                 .orElseThrow(() -> new ResourceNotFoundException("Target account not found"));
 
         BigDecimal amount = request.getAmount();
+        if (amount.compareTo(senderAccount.getBalance()) > 0) {
+            throw new BusinessValidationException("Insufficient balance in the sender's account.");
+        }
 
         // 2. Update Saldo Keduanya
         senderAccount.setBalance(senderAccount.getBalance().subtract(amount)); // Pengirim Berkurang

@@ -12,7 +12,8 @@ import java.util.UUID;
 @Repository
 public interface CategoryRepository extends JpaRepository<Category, Long> {
 
-    // Logic Pro: Ambil kategori custom user + kategori default sistem (userId IS NULL)
+    // Logic Pro: Ambil kategori custom user + kategori default sistem (userId IS
+    // NULL)
     @Query("SELECT c FROM Category c WHERE c.userId = :userId OR c.userId IS NULL")
     List<Category> findAllByUserIdOrSystem(UUID userId);
 
@@ -20,4 +21,6 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
     // Logic: Kategori User + System, tapi difilter tipe-nya
     @Query("SELECT c FROM Category c WHERE (c.userId = :userId OR c.userId IS NULL) AND c.type = :type")
     List<Category> findByUserIdAndType(UUID userId, CategoryType type);
+
+    boolean existsByUserIdAndNameAndType(UUID userId, String name, CategoryType type);
 }
