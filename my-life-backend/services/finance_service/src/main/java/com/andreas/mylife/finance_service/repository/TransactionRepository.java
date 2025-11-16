@@ -14,14 +14,22 @@ import java.util.UUID;
 public interface TransactionRepository extends JpaRepository<Transaction, UUID> {
 
     // 1. HISTORY TRANSAKSI UTAMA (Wajib Pagination)
-    // "JOIN FETCH" memaksa Hibernate mengambil data Account & Category SEKALIGUS dalam 1 query.
+    // "JOIN FETCH" memaksa Hibernate mengambil data Account & Category SEKALIGUS
+    // dalam 1 query.
     // Ini mencegah N+1 Problem yang bikin aplikasi lemot.
+    // PERBAIKAN QUERY: Handle NULL parameter
     @Query(value = "SELECT t FROM Transaction t " +
             "JOIN FETCH t.account " +
             "LEFT JOIN FETCH t.category " +
             "WHERE t.userId = :userId " +
-            "AND t.transactionDate BETWEEN :startDate AND :endDate",
-            countQuery = "SELECT COUNT(t) FROM Transaction t WHERE t.userId = :userId AND t.transactionDate BETWEEN :startDate AND :endDate")
+            // CAST biar Postgres tau ini tipe data timestamp (waktu)
+            "AND (CAST(:startDate AS timestamp) IS NULL OR t.transactionDate >= :startDate) " +
+            "AND (CAST(:endDate AS timestamp) IS NULL OR t.transactionDate <= :endDate)",
+
+            // COUNT QUERY JUGA WAJIB DIPERBAIKI
+            countQuery = "SELECT COUNT(t) FROM Transaction t WHERE t.userId = :userId " +
+                    "AND (CAST(:startDate AS timestamp) IS NULL OR t.transactionDate >= :startDate) " +
+                    "AND (CAST(:endDate AS timestamp) IS NULL OR t.transactionDate <= :endDate)")
     Page<Transaction> findHistory(UUID userId, ZonedDateTime startDate, ZonedDateTime endDate, Pageable pageable);
 
     // 2. Filter per Akun (Misal: History spesifik dompet BCA)
@@ -31,13 +39,14 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID> 
     // Karena OneToOne lazy, kita query manual biar aman
     @Query("SELECT t FROM Transaction t WHERE t.transferPair.id = :pairId")
     Transaction findLinkedTransfer(UUID pairId);
-    
+
     // 4. Dashboard Summary: Total Pemasukan/Pengeluaran bulan ini
     // Jauh lebih cepat hitung di DB daripada tarik semua data ke Java lalu loop
     /*
-    @Query("SELECT SUM(t.amount) FROM Transaction t " +
-           "WHERE t.userId = :userId AND t.type = 'EXPENSE' " +
-           "AND t.transactionDate BETWEEN :start AND :end")
-    BigDecimal sumExpenseByUserAndDate(UUID userId, ZonedDateTime start, ZonedDateTime end);
-    */
+     * @Query("SELECT SUM(t.amount) FROM Transaction t " +
+     * "WHERE t.userId = :userId AND t.type = 'EXPENSE' " +
+     * "AND t.transactionDate BETWEEN :start AND :end")
+     * BigDecimal sumExpenseByUserAndDate(UUID userId, ZonedDateTime start,
+     * ZonedDateTime end);
+     */
 }
