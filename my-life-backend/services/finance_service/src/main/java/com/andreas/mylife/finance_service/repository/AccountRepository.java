@@ -16,4 +16,13 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
             LIMIT 1
         """, nativeQuery = true)
     Optional<Account> findByUserId(@Param("userId") UUID userId);
+
+    @Query( value =  """
+            SELECT EXISTS(
+                SELECT 1
+                FROM accounts
+                WHERE name ILIKE CONCAT('%', name, '%')
+            ) 
+        """, nativeQuery = true)
+    Boolean isNameLikeExists(@Param("name") String name);
 }
