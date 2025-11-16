@@ -37,16 +37,20 @@ public class AccountServiceImpl implements AccountService {
                 }
 
                 // 2. Validasi & Konversi Tipe Akun (String -> Enum)
+                // 2. Validasi & Konversi Tipe Akun (String -> Enum)
                 AccountType accountType;
                 try {
-                        // Mengubah input user "BANK" menjadi Enum AccountType.BANK
                         accountType = AccountType.valueOf(request.getType().toUpperCase());
                 } catch (IllegalArgumentException e) {
-                        throw new BusinessValidationException(
-                                        "Invalid account type: " + request.getType()
-                                                        + ". Allowed types: BANK, CASH, E_WALLET, CREDIT_CARD, PAYLATER, etc.");
-                }
+                        // Ambil semua value enum secara dinamis, join pakai koma
+                        String allowedTypes = java.util.Arrays.stream(AccountType.values())
+                                        .map(Enum::name)
+                                        .collect(java.util.stream.Collectors.joining(", "));
 
+                        throw new BusinessValidationException(
+                                        "Invalid account type: '" + request.getType() + "'. Allowed types are: ["
+                                                        + allowedTypes + "]");
+                }
                 // 3. Mapping Request ke Entity
                 Account account = Account.builder()
                                 .userId(userId)

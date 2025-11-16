@@ -24,7 +24,8 @@ public enum AccountType {
     }
     
     public enum AccountCategory {
-        ASSET,      // Harta (Saldo Positif menambah kekayaan)
-        LIABILITY   // Utang (Saldo Positif mengurangi kekayaan)
+        ASSET,      // Harta (Saldo Positif menambah kekayaan) umunya nilai positiv
+        LIABILITY   // Utang (Saldo Positif mengurangi kekayaan) umunya nilai negatif
+        // total kekayaan = asset + liability
     }
 }
