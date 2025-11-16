@@ -15,29 +15,33 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_NULL) // Field null gak usah dikirim ke frontend (hemat bytes)
+@JsonInclude(JsonInclude.Include.NON_NULL) // Field yang NULL gak usah dikirim (Hemat bandwidth)
 public class TransactionResponse {
 
     private UUID id;
-    
-    // Flat data Account (biar frontend gak perlu fetch ulang)
+
+    // --- FLAT DATA ACCOUNT (Biar frontend gak perlu nembak API lagi) ---
     private UUID accountId;
     private String accountName;
 
-    // Flat data Category
+    // --- FLAT DATA CATEGORY (Hanya muncul di Income/Expense) ---
     private Long categoryId;
     private String categoryName;
 
+    // --- DATA UTAMA ---
     private BigDecimal amount;
     private String type; // INCOME, EXPENSE, TRANSFER
     private String description;
 
+    // --- KHUSUS TRANSFER ---
+    // ID pasangan transaksinya (misal: ID transaksi di Akun Penerima)
+    private UUID transferPairId;
+
+    // --- WAKTU ---
+    // Format ISO-8601 standard (Frontend friendly)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSZ")
     private ZonedDateTime transactionDate;
 
-    // Khusus Transfer: Cukup kirim ID pasangannya saja
-    private UUID transferPairId;
-    
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSZ")
     private ZonedDateTime createdAt;
 }
