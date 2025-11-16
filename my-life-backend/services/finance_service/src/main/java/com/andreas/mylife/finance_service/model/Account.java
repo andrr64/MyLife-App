@@ -1,58 +1,44 @@
 package com.andreas.mylife.finance_service.model;
 
-import java.math.BigDecimal;
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.UUID;
-
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
+import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.math.BigDecimal;
+import java.time.ZonedDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "accounts")
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class Account {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @Column(name = "user_id", nullable = false)
-    private UUID userId;
+    private UUID userId; // Disimpan sebagai ID saja (Loose coupling dengan User Service)
 
-    @Column(nullable = false, length = 128)
-    private String name;
+    @Column(nullable = false, length = 100)
+    private String name; // -- ASSET, HUTANG, DLL
 
-    @Column(nullable = false, precision = 19, scale = 2)
-    private BigDecimal amount;
+    @Column(nullable = false, length = 20)
+    private String type; // Bisa dibuat Enum juga kalau mau strict (BANK, CASH, etc)
 
-    @Column(length = 256)
-    private String description;
+    @Column(nullable = false, precision = 19, scale = 4)
+    private BigDecimal balance; // Inisialisasi 0 biar aman
+
+    @Column(length = 3, columnDefinition = "CHAR(3)")
+    private String currency;
 
     @CreationTimestamp
-    @Column(name = "created_at", nullable = false)
-    private OffsetDateTime createdAt;
-
-    @OneToMany(mappedBy = "account", fetch = FetchType.LAZY)
-    private List<Transaction> transactions;
-    
-    @UpdateTimestamp
-    @Column(name = "updated_at", nullable = false)
-    private OffsetDateTime updatedAt;
+    @Column(name = "created_at", updatable = false)
+    private ZonedDateTime createdAt;
 }

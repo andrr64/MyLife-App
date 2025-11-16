@@ -1,8 +1,5 @@
 package com.andreas.mylife.finance_service.controller;
 
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.andreas.mylife.finance_service.common.ApiPath;
 import com.andreas.mylife.finance_service.dto.request.AccountRequest;
 import com.andreas.mylife.finance_service.dto.response.AccountResponse;
@@ -12,36 +9,51 @@ import com.andreas.mylife.finance_service.util.UserIdExtractor;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-
+@Slf4j
 @RestController
-@RequestMapping(ApiPath.ACCOUNT)
+@RequestMapping(ApiPath.ACCOUNT) // Pastikan constant string path-nya sesuai (misal: "/api/v1/accounts")
 @RequiredArgsConstructor
 public class AccountController {
-    private final AccountService accountService;
 
-    @PostMapping("/add-account")
-    public ApiResponse<Object> addAccount(
-            @Valid @RequestBody AccountRequest request) {
-        accountService.addAccount(
-                UserIdExtractor.extractUserId(),
-                request);
-        return ApiResponse.success("OK");
-    }
+        private final AccountService accountService;
 
-    @GetMapping("/get-accounts")
-    public ApiResponse<List<AccountResponse>> getAccounts(
-            @RequestParam(required = false) Long accountID) {
-        return ApiResponse.success(
-                accountService.getAccounts(
-                        UserIdExtractor.extractUserId(),
-                        accountID));
-    }
+        /**
+         * Create New Account
+         * POST /api/v1/accounts/add
+         */
+        @PostMapping("/add")
+        public ApiResponse<AccountResponse> createAccount(@Valid @RequestBody AccountRequest request) {
+                // 1. Extract User ID dari Token/Security Context
+                UUID userId = UserIdExtractor.extractUserId();
 
+                log.info("Request create account for user: {}", userId);
+
+                // 2. Panggil Service
+                AccountResponse response = accountService.createAccount(userId, request);
+
+                // 3. Return object yang baru dibuat (Best Practice RESTful)
+                return ApiResponse.success(response);
+        }
+
+        /**
+         * Get All Accounts (List View)
+         * GET /api/v1/accounts
+         */
+        @GetMapping
+        public ApiResponse<List<AccountResponse>> getAccounts() {
+                // 1. Extract User ID
+                UUID userId = UserIdExtractor.extractUserId();
+
+                // 2. Panggil Service (Get All tanpa pagination)
+                List<AccountResponse> accounts = accountService.getAccountsByUserId(userId);
+
+                return ApiResponse.success(accounts);
+        }
 }

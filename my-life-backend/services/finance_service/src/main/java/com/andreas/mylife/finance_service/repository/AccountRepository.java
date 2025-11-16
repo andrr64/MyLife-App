@@ -1,26 +1,26 @@
 package com.andreas.mylife.finance_service.repository;
 
+import com.andreas.mylife.finance_service.model.Account;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
-import com.andreas.mylife.finance_service.model.Account;
 
-public interface AccountRepository extends JpaRepository<Account, Long> {
+@Repository
+public interface AccountRepository extends JpaRepository<Account, UUID> {
+
+    // Ambil semua akun milik user tertentu
     List<Account> findByUserId(UUID userId);
 
-    Optional<Account> findAccountByUserId(UUID userId);
+    // Validasi: Cek apakah akun milik user tersebut (untuk security check sebelum transaksi)
+    Optional<Account> findByIdAndUserId(UUID id, UUID userId);
 
-    Optional<Account> findByIdAndUserId(Long id, UUID userId);
-
-    @Query(value = """
-            SELECT EXISTS(
-                SELECT 1
-                FROM accounts
-                WHERE name ILIKE CONCAT('%', :name, '%')
-            )
-            """, nativeQuery = true)
-    Boolean isNameLikeExists(@Param("name") String name);
+    // Validasi: Mencegah nama akun duplikat di user yang sama
+    boolean existsByUserIdAndName(UUID userId, String name);
+    
+    // Menghitung Total Aset User (Optional, kadang lebih cepat lewat DB daripada Java)
+    // @Query("SELECT SUM(a.balance) FROM Account a WHERE a.userId = :userId AND a.type = 'BANK'")
+    // BigDecimal sumBankBalanceByUserId(UUID userId);
 }

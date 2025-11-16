@@ -1,86 +1,77 @@
 package com.andreas.mylife.finance_service.services.impl;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
-import org.springframework.stereotype.Service;
-
 import com.andreas.mylife.finance_service.dto.request.AccountRequest;
 import com.andreas.mylife.finance_service.dto.response.AccountResponse;
 import com.andreas.mylife.finance_service.exception.BusinessValidationException;
-import com.andreas.mylife.finance_service.mapper.AccountMapper;
 import com.andreas.mylife.finance_service.model.Account;
-import com.andreas.mylife.finance_service.model.Transaction;
-import com.andreas.mylife.finance_service.model.TxCategory;
 import com.andreas.mylife.finance_service.repository.AccountRepository;
-import com.andreas.mylife.finance_service.repository.TransactionRepository;
-import com.andreas.mylife.finance_service.repository.TxCategoryRepository;
 import com.andreas.mylife.finance_service.services.AccountService;
-
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class AccountServiceImpl implements AccountService {
-    private final TransactionRepository transactionRepository;
-    private final AccountRepository accountRepository;
-    private final TxCategoryRepository txCategoryRepository;
 
-    @Override
-    @Transactional
-    public void addAccount(UUID userID, AccountRequest req) {
-        if (accountRepository.isNameLikeExists(req.getName())) {
-            throw new BusinessValidationException("Akun '" + req.getName() + "' sudah ada! gunakan nama lain.");
-        }
-        Optional<TxCategory> userCategory = txCategoryRepository.findCategoryByNameLike("Initial balance", userID);
-        if (userCategory.isEmpty()) {
-            log.info("Initial balance not found, try to create one.....");
-            TxCategory category = TxCategory.builder()
-                    .name("Initial balance")
-                    .userId(userID)
-                    .effect(true)
-                    .build();
-            userCategory = Optional.of(txCategoryRepository.save(category));
-            log.info("Add \"initial balance\" category for user -> " + userID.toString() + " success.");
-        }
-        Account account = Account.builder()
-                .amount(req.getInitialAmount())
-                .userId(userID)
-                .name(req.getName())
-                .description(req.getDescription())
-                .build();
-        Account savedAccount = accountRepository.save(account);
-        Transaction transaction = Transaction.builder()
-                .account(savedAccount)
-                .amount(req.getInitialAmount())
-                .category(userCategory.get())
-                .description("initial balance for " + req.getName())
-                .title("initial balance for '" + req.getName() + "'")
-                .build();
-        transactionRepository.save(transaction);
-    }
+        private final AccountRepository accountRepository;
 
-    @Override
-    public List<AccountResponse> getAccounts(UUID userId, Long accountId) {
-        // Jika accountId diberikan → ambil satu akun spesifik
-        if (accountId != null) {
-            Optional<Account> account = accountRepository.findByIdAndUserId(accountId, userId);
-            if (account.isEmpty()) {
-                throw new BusinessValidationException("Akun dengan ID tersebut tidak ditemukan.");
-            }
-            return AccountMapper.toResponseList(List.of(account.get()));
+        @Override
+        @Transactional // Wajib: untuk memastikan data tersimpan atomik
+        public AccountResponse createAccount(UUID userId, AccountRequest request) {
+                log.info("Creating account for user: {}, name: {}", userId, request.getName());
+
+                // 1. Validasi Bisnis: Cek nama duplikat di user yg sama
+                boolean exists = accountRepository.existsByUserIdAndName(userId, request.getName());
+                if (exists) {
+                        throw new BusinessValidationException(
+                                        "Account with name '" + request.getName() + "' already exists.");
+                }
+
+                // 2. Mapping Request ke Entity
+                Account account = Account.builder()
+                                .userId(userId)
+                                .name(request.getName())
+                                .type(request.getType()) // Nanti bisa divalidasi against Enum
+                                .currency("IDR") // Default IDR, bisa dibuat dinamis kalau perlu
+                                .balance(request.getInitialBalance() != null ? request.getInitialBalance()
+                                                : BigDecimal.ZERO)
+                                .build();
+
+                // 3. Save ke DB
+                Account savedAccount = accountRepository.save(account);
+
+                // 4. Return Response
+                return mapToResponse(savedAccount);
         }
 
-        // Jika accountId null → ambil semua akun untuk user
-        List<Account> accounts = accountRepository.findByUserId(userId);
-        if (accounts.isEmpty()) {
-            throw new BusinessValidationException("Tidak ada akun untuk user ini.");
+        @Override
+        @Transactional(readOnly = true) // Optimasi: Beri tahu DB ini cuma baca data
+        public List<AccountResponse> getAccountsByUserId(UUID userId) {
+                // Ambil data, lalu stream convert ke DTO
+                return accountRepository.findByUserId(userId)
+                                .stream()
+                                .map(this::mapToResponse)
+                                .collect(Collectors.toList());
         }
 
-        return AccountMapper.toResponseList(accounts);
-    }
+        // --- Helper Methods (Manual Mapper) ---
+        // Nanti kalau project makin besar, bisa pindah ke MapStruct
+        private AccountResponse mapToResponse(Account account) {
+                return AccountResponse.builder()
+                                .id(account.getId())
+                                .name(account.getName())
+                                .type(account.getType())
+                                .balance(account.getBalance())
+                                .currency(account.getCurrency())
+                                .createdAt(account.getCreatedAt())
+                                .build();
+        }
 }

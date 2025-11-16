@@ -1,25 +1,21 @@
 package com.andreas.mylife.finance_service.dto.request;
 
-import java.math.BigDecimal;
-
-import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 @Data
 public class AccountRequest {
-    @NotBlank
-    @Size(max = 128)
-    private String name;
-    
-    @NotNull
-    @Positive
-    private BigDecimal initialAmount;
 
-    @Nullable
-    @Size(max = 256)
-    private String description;
+    @NotBlank(message = "Account name is required")
+    @Size(max = 100)
+    private String name;
+
+    @NotBlank(message = "Account type is required (BANK, CASH, E_WALLET)")
+    private String type;
+
+    // Opsional: User bisa set saldo awal saat bikin akun (misal migrasi data)
+    private BigDecimal initialBalance; 
 }

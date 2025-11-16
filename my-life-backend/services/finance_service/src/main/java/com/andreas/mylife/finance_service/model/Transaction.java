@@ -1,59 +1,65 @@
 package com.andreas.mylife.finance_service.model;
 
-import java.math.BigDecimal;
-import java.time.OffsetDateTime;
-import java.util.UUID;
-
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-import org.hibernate.annotations.UuidGenerator;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
+import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.math.BigDecimal;
+import java.time.ZonedDateTime;
+import java.util.UUID;
 
 @Entity
-@Table(name = "transactions")
+@Table(name = "transactions", indexes = {
+        @Index(name = "idx_transactions_user_date", columnList = "user_id, transaction_date"),
+        @Index(name = "idx_transactions_category", columnList = "category_id")
+})
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Transaction {
 
     @Id
-    @UuidGenerator
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(length = 128, nullable = false)
-    private String title;
+    @Column(name = "user_id", nullable = false)
+    private UUID userId;
 
-    @Column(length = 255)
-    private String description;
+    // Relasi ke Account (Many to One)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "account_id", nullable = false)
+    private Account account;
 
-    @Column(nullable = false, precision = 19, scale = 2)
+    // Relasi ke Category (Many to One)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id")
+    private Category category;
+
+    @Column(nullable = false, precision = 19, scale = 4)
     private BigDecimal amount;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "tx_category_id")
-    private TxCategory category;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 10)
+    private TransactionType type;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "account_id")
-    private Account account; // mappedBy= account
+    @Column(name = "transaction_date", nullable = false)
+    private ZonedDateTime transactionDate;
+
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
+    // Self-Referencing Relationship untuk Transfer Pair
+    // Menggunakan OneToOne karena satu transaksi transfer pasti cuma punya 1
+    // pasangan
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "transfer_pair_id")
+    private Transaction transferPair;
 
     @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private OffsetDateTime createdAt;
-
-    @UpdateTimestamp
-    @Column(name = "updated_at", nullable = false)
-    private OffsetDateTime updatedAt;
+    @Column(name = "created_at", updatable = false)
+    private ZonedDateTime createdAt;
 }
