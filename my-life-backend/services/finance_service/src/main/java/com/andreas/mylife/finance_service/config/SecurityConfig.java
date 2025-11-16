@@ -26,7 +26,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // Gunakan wildcards (**) agar mencakup sub-path seperti /test, /{id}, dll.
                         .requestMatchers(ApiPath.TX_TYPE + "/**").authenticated()
-                        .requestMatchers(ApiPath.TX_CATEGORY + "/**").authenticated()
+                        .requestMatchers(ApiPath.CATEGORY + "/**").authenticated()
                         .requestMatchers(ApiPath.ACCOUNT + "/**").authenticated()
                         .requestMatchers(ApiPath.TRANSACTION + "/**").authenticated()
                         .anyRequest().permitAll())
