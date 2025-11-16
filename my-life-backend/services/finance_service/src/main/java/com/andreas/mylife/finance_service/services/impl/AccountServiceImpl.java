@@ -4,6 +4,7 @@ import com.andreas.mylife.finance_service.dto.request.AccountRequest;
 import com.andreas.mylife.finance_service.dto.response.AccountResponse;
 import com.andreas.mylife.finance_service.exception.BusinessValidationException;
 import com.andreas.mylife.finance_service.model.Account;
+import com.andreas.mylife.finance_service.model.AccountType;
 import com.andreas.mylife.finance_service.repository.AccountRepository;
 import com.andreas.mylife.finance_service.services.AccountService;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +25,7 @@ public class AccountServiceImpl implements AccountService {
         private final AccountRepository accountRepository;
 
         @Override
-        @Transactional // Wajib: untuk memastikan data tersimpan atomik
+        @Transactional
         public AccountResponse createAccount(UUID userId, AccountRequest request) {
                 log.info("Creating account for user: {}, name: {}", userId, request.getName());
 
@@ -35,40 +36,51 @@ public class AccountServiceImpl implements AccountService {
                                         "Account with name '" + request.getName() + "' already exists.");
                 }
 
-                // 2. Mapping Request ke Entity
+                // 2. Validasi & Konversi Tipe Akun (String -> Enum)
+                AccountType accountType;
+                try {
+                        // Mengubah input user "BANK" menjadi Enum AccountType.BANK
+                        accountType = AccountType.valueOf(request.getType().toUpperCase());
+                } catch (IllegalArgumentException e) {
+                        throw new BusinessValidationException(
+                                        "Invalid account type: " + request.getType()
+                                                        + ". Allowed types: BANK, CASH, E_WALLET, CREDIT_CARD, PAYLATER, etc.");
+                }
+
+                // 3. Mapping Request ke Entity
                 Account account = Account.builder()
                                 .userId(userId)
                                 .name(request.getName())
-                                .type(request.getType()) // Nanti bisa divalidasi against Enum
-                                .currency("IDR") // Default IDR, bisa dibuat dinamis kalau perlu
+                                .type(accountType) // Set menggunakan Enum yang sudah divalidasi
+                                .currency("IDR")
+                                .isActive(true) // Default active
                                 .balance(request.getInitialBalance() != null ? request.getInitialBalance()
                                                 : BigDecimal.ZERO)
                                 .build();
 
-                // 3. Save ke DB
+                // 4. Save ke DB
                 Account savedAccount = accountRepository.save(account);
 
-                // 4. Return Response
+                // 5. Return Response
                 return mapToResponse(savedAccount);
         }
 
         @Override
-        @Transactional(readOnly = true) // Optimasi: Beri tahu DB ini cuma baca data
+        @Transactional(readOnly = true)
         public List<AccountResponse> getAccountsByUserId(UUID userId) {
-                // Ambil data, lalu stream convert ke DTO
                 return accountRepository.findByUserId(userId)
                                 .stream()
                                 .map(this::mapToResponse)
                                 .collect(Collectors.toList());
         }
 
-        // --- Helper Methods (Manual Mapper) ---
-        // Nanti kalau project makin besar, bisa pindah ke MapStruct
+        // --- Helper Methods ---
         private AccountResponse mapToResponse(Account account) {
                 return AccountResponse.builder()
                                 .id(account.getId())
                                 .name(account.getName())
-                                .type(account.getType())
+                                // Convert Enum ke String untuk Response JSON
+                                .type(account.getType().name())
                                 .balance(account.getBalance())
                                 .currency(account.getCurrency())
                                 .createdAt(account.getCreatedAt())
