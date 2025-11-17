@@ -35,7 +35,7 @@ public class CategoryServiceImpl implements CategoryService {
             throw new BusinessValidationException("Invalid category type. Allowed: INCOME, EXPENSE");
         }
         // 2. validasi apakah nama dan tipe kategori sudah exists
-        if (categoryRepository.existsByUserIdAndNameAndType(userId, request.getName(), type)) {
+        if (categoryRepository.existsCategoryNameForUserOrGlobal(userId, request.getName(), type)) {
             throw new BusinessValidationException("Category '" + request.getName() + "' already exists for this type.");
         }
 

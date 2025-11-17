@@ -22,5 +22,16 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
     @Query("SELECT c FROM Category c WHERE (c.userId = :userId OR c.userId IS NULL) AND c.type = :type")
     List<Category> findByUserIdAndType(UUID userId, CategoryType type);
 
-    boolean existsByUserIdAndNameAndType(UUID userId, String name, CategoryType type);
+    @Query("""
+                SELECT COUNT(c) > 0
+                FROM Category c
+                WHERE LOWER(c.name) = LOWER(:name)
+                  AND c.type = :type
+                  AND (c.userId = :userId OR c.userId IS NULL)
+            """)
+    boolean existsCategoryNameForUserOrGlobal(
+            UUID userId,
+            String name,
+            CategoryType type);
+
 }
