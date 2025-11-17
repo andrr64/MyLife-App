@@ -21,6 +21,8 @@ import { Switch } from "@/components/ui/switch";
 import { URLPath } from "@/app/path";
 import { useLoading } from "@/hooks/useLoading";
 import toast from "react-hot-toast";
+import { RegisterRequest } from "@/types/dto/user/request/register";
+import { AuthService } from "@/services/user/AuthService";
 
 const APP_NAME = "MyLife";
 const COPYRIGHT_NAME = "Andreas";
@@ -91,17 +93,16 @@ const RegisterPage: React.FC = () => {
 
         loading.toggle();
 
-        const payload = {
+        const payload: RegisterRequest = {
             email: formData.email,
             password: formData.password,
-            firstName: formData.firstName,
-            lastName: formData.lastName,
+            fullName: formData.firstName + " " + formData.lastName
         };
 
         try {
             console.log("Register payload:", payload);
-            await new Promise((r) => setTimeout(r, 2000));
-
+            await new Promise((r) => setTimeout(r, 500));
+            const response = await AuthService.register(payload);
             toast.success("Account created successfully");
         } catch (err: any) {
             toast.error(err?.message || "An error occurred");

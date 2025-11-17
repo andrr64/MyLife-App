@@ -21,6 +21,8 @@ import { Switch } from "@/components/ui/switch";
 import { URLPath } from "@/app/path";
 import { useLoading } from "@/hooks/useLoading";
 import toast from "react-hot-toast";
+import { AuthService } from "@/services/user/AuthService";
+import { LoginRequest } from "@/types/dto/user/request/login";
 // Hapus import hook dan modal global
 // import { useLoading } from "@/hooks/useLoading";
 // import { LoadingModal } from "@/components/modal/LoadingModal";
@@ -85,14 +87,12 @@ const LoginPage: React.FC = () => {
         loading.toggle();
 
         try {
-            console.log("Login data:", formData);
-            // TODO: Simulasi panggil API NestJS
             await new Promise(resolve => setTimeout(resolve, 2000));
-            toast.success("Login success")
-            // ... (logika sukses)
+            const response = await AuthService.login(formData);
+            toast.success("Login success.");
+            console.log(response.data);
         } catch (error: any) {
-            toast.error(error);
-            // TODO: Tampilkan toast error
+            toast.error("Failed : " + error.message);
         } finally {
             loading.toggle();
         }
