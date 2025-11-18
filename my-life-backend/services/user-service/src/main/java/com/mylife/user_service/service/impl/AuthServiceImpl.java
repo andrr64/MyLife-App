@@ -1,5 +1,9 @@
 package com.mylife.user_service.service.impl;
 
+import java.util.UUID;
+
+import javax.management.RuntimeErrorException;
+
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -47,6 +51,35 @@ public class AuthServiceImpl implements AuthService {
         String accessToken = jwtUtil.generateToken(user);
         String refreshToken = jwtUtil.generateToken(user);
         return new AuthResponse(accessToken, refreshToken);
+    }
+
+    @Override
+    public AuthResponse createRefreshToken(String refreshToken) {
+        // 1. Validasi Token (Signature & Expiry)
+        // Kita ekstrak subject (UserId) dari token. Kalau expired/invalid, ini akan
+        // throw error JJWT
+        String userId = jwtUtil.extractUsername(refreshToken);
+
+        // 2. Cek apakah user benar-benar ada di DB
+        User user = userRepository.findById(UUID.fromString(userId))
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // 3. (Opsional tapi Recommended) Cek validitas token spesifik
+        if (!jwtUtil.isTokenValid(refreshToken, userId)) {
+            throw new RuntimeException("Invalid Refresh Token");
+        }
+
+        // 4. Generate Access Token Baru
+        String newAccessToken = jwtUtil.generateToken(user);
+
+        // 5. (Opsional) Refresh Token Rotation
+        // Best practicenya: Saat refresh, ganti juga refresh tokennya biar makin aman
+        String newRefreshToken = jwtUtil.generateRefreshToken(user);
+
+        return AuthResponse.builder()
+                .accessToken(newAccessToken)
+                .refreshToken(newRefreshToken)
+                .build();
     }
 
 }

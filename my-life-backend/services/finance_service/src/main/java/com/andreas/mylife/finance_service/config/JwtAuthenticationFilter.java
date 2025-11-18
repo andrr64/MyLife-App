@@ -24,24 +24,37 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        String authHeader = request.getHeader("Authorization");
-        if (authHeader == null || !authHeader.startsWith("Bearer")) {
+        String token = extractTokenFromCookie(request);
+
+        if (token == null) {
             filterChain.doFilter(request, response);
             return;
         }
+
         try {
-            String token = authHeader.substring(7); // Hapus "Bearer "
             String userId = jwtVerifier.validateTokenAndGetUserId(token);
+
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                    userId, // Ini adalah userId (String)
+                    userId,
                     null,
                     new ArrayList<>());
-            // Simpan kartu akses di SecurityContext
+
             SecurityContextHolder.getContext().setAuthentication(authentication);
         } catch (Exception e) {
             System.out.println("Invalid token: " + e.getMessage());
         }
         filterChain.doFilter(request, response);
+    }
+
+    private String extractTokenFromCookie(HttpServletRequest request) {
+        if (request.getCookies() == null)
+            return null;
+        for (var cookie : request.getCookies()) {
+            if (cookie.getName().equals("access_token")) {
+                return cookie.getValue();
+            }
+        }
+        return null;
     }
 
 }

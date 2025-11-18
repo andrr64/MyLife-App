@@ -24,6 +24,9 @@ public class JwtUtil {
     @Value("${jwt.expiration-ms}")
     private long jwtExpiration;
 
+    @Value("${jwt.refresh-expiration-ms}")
+    private long jwtRefreshExpiration;
+
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
@@ -34,10 +37,11 @@ public class JwtUtil {
     }
 
     public String generateToken(User user) {
-        Map<String, Object> extraClaims = new HashMap<>();
-        extraClaims.put("email", user.getEmail());
-        extraClaims.put("role", "USER"); // Contoh nambah claim role
-        return buildToken(extraClaims, user.getId().toString(), jwtExpiration);
+        return buildToken(new HashMap<>(), user.getId().toString(), jwtExpiration);
+    }
+
+    public String generateRefreshToken(User user) {
+        return buildToken(new HashMap<>(), user.getId().toString(), jwtRefreshExpiration);
     }
 
     private String buildToken(Map<String, Object> extraClaims, String subject, long expiration) {
