@@ -4,7 +4,7 @@ plugins {
 	id("io.spring.dependency-management") version "1.1.7"
 }
 
-group = "com.andreas.mylife"
+group = "com.mylife"
 version = "0.0.1-SNAPSHOT"
 description = "Demo project for Spring Boot"
 
