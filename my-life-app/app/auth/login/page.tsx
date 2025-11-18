@@ -23,6 +23,7 @@ import { useLoading } from "@/hooks/useLoading";
 import toast from "react-hot-toast";
 import { AuthService } from "@/services/user/AuthService";
 import { LoginRequest } from "@/types/dto/user/request/login";
+import { useRouter } from "next/navigation";
 // Hapus import hook dan modal global
 // import { useLoading } from "@/hooks/useLoading";
 // import { LoadingModal } from "@/components/modal/LoadingModal";
@@ -67,6 +68,7 @@ const ThemeToggle = () => {
 
 
 const LoginPage: React.FC = () => {
+    const router = useRouter();
     const [formData, setFormData] = useState({
         email: "", // <-- Sudah 'email'
         password: "",
@@ -78,10 +80,6 @@ const LoginPage: React.FC = () => {
         setFormData({ ...formData, [e.target.id]: e.target.value });
     };
 
-    // Hapus hook global
-    // const loading = useLoading(false); 
-
-    // Modifikasi handleSubmit untuk pakai state lokal
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         loading.toggle();
@@ -89,7 +87,11 @@ const LoginPage: React.FC = () => {
         try {
             await new Promise(resolve => setTimeout(resolve, 2000));
             const response = await AuthService.login(formData);
-            toast.success("Login success.");
+            if (response.data && response.data.accessToken) {
+                toast.success("Login success.");
+                router.push(URLPath.home);
+                console.log("Login successful, token stored in memory.");
+            }
             console.log(response.data);
         } catch (error: any) {
             toast.error("Failed : " + error.message);
