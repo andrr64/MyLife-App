@@ -18,3 +18,4 @@ spring:
 jwt:
   secret: ${JWT_SECRET}
   expiration-ms: ${JWT_EXPIRATE_MS}
+  refresh-expiration-ms: ${JWT_REFRESH_EXPIRATE_MS}
