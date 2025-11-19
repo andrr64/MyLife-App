@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- 1. Kakeknya: Spring Boot Starter Parent -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.3.5</version>
+        <relativePath/>
+    </parent>
+
+    <!-- 2. Identitas Bapak (Root Project) -->
+    <groupId>com.andreas.mylife</groupId>
+    <artifactId>backend</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <!-- PENTING: Packaging harus POM -->
+    <packaging>pom</packaging>
+
+    <name>backend-root</name>
+    <description>Parent project for MyLife Microservices</description>
+
+    <!-- 3. Daftar Anak (Modules) -->
+    <modules>
+        <module>userservice</module>
+        <module>financeservice</module>
+        <!-- UNCOMMENT INI -->
+        <module>common-lib</module>
+    </modules>
+
+    <properties>
+        <java.version>21</java.version>
+        <jjwt.version>0.12.6</jjwt.version>
+        <spring-dotenv.version>4.0.0</spring-dotenv.version>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+    </properties>
+
+    <!-- 4. Dependency Management (Pusat Kontrol Versi) -->
+    <!-- Anak-anak tinggal panggil dependency ini TANPA version -->
+    <dependencyManagement>
+        <dependencies>
+            <!-- JWT Library -->
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-api</artifactId>
+                <version>${jjwt.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-impl</artifactId>
+                <version>${jjwt.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-jackson</artifactId>
+                <version>${jjwt.version}</version>
+            </dependency>
+
+            <!-- Dotenv -->
+            <dependency>
+                <groupId>me.paulschwarz</groupId>
+                <artifactId>spring-dotenv</artifactId>
+                <version>${spring-dotenv.version}</version>
+            </dependency>
+
+            <!-- TAMBAHKAN BAGIAN INI -->
+            <!-- Mendaftarkan common-lib agar anak-anak tau versinya -->
+            <dependency>
+                <groupId>com.andreas.mylife</groupId>
+                <artifactId>common-lib</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+</project>

@@ -2,6 +2,7 @@ package com.andreas.mylife.userservice.service.impl;
 
 import java.util.UUID;
 
+import com.mylife.common.util.JWTUtil;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final JWTUtil jwtUtil2;
 
     @Override
     @Transactional
@@ -46,33 +48,33 @@ public class AuthServiceImpl implements AuthService {
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
             throw new BadCredentialsException("Invalid credential.");
         }
-        String accessToken = jwtUtil.generateToken(user);
-        String refreshToken = jwtUtil.generateToken(user);
+        String accessToken = jwtUtil2.generateAccessToken(user.getId().toString());
+        String refreshToken = jwtUtil2.generateRefreshToken(user.getId().toString());
         return new AuthResponse(accessToken, refreshToken);
     }
 
     @Override
     public AuthResponse createRefreshToken(String refreshToken) {
-        // 1. Validasi Token (Signature & Expiry)
-        // Kita ekstrak subject (UserId) dari token. Kalau expired/invalid, ini akan
-        // throw error JJWT
-        String userId = jwtUtil.extractUsername(refreshToken);
+        String userIdFromToken = jwtUtil2.extractUserID(refreshToken);
 
         // 2. Cek apakah user benar-benar ada di DB
-        User user = userRepository.findById(UUID.fromString(userId))
+        User user = userRepository.findById(UUID.fromString(userIdFromToken))
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         // 3. (Opsional tapi Recommended) Cek validitas token spesifik
-        if (!jwtUtil.isTokenValid(refreshToken, userId)) {
+        if (!jwtUtil2.isTokenValid(refreshToken, userIdFromToken)) {
             throw new RuntimeException("Invalid Refresh Token");
         }
 
+        String userIdFromDb = user.getId().toString();
+
+
         // 4. Generate Access Token Baru
-        String newAccessToken = jwtUtil.generateToken(user);
+        String newAccessToken = jwtUtil2.generateAccessToken(userIdFromDb);
 
         // 5. (Opsional) Refresh Token Rotation
         // Best practicenya: Saat refresh, ganti juga refresh tokennya biar makin aman
-        String newRefreshToken = jwtUtil.generateRefreshToken(user);
+        String newRefreshToken = jwtUtil2.generateRefreshToken(userIdFromDb);
 
         return AuthResponse.builder()
                 .accessToken(newAccessToken)
