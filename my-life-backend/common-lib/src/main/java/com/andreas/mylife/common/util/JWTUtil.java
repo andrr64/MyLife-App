@@ -1,4 +1,4 @@
-package com.mylife.common.util;
+package com.andreas.mylife.common.util;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
