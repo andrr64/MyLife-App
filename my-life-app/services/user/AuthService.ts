@@ -5,7 +5,9 @@ import { ApiResponse } from "@/types/api_response";
 import { LoginRequest } from "@/types/dto/user/request/login";
 import { RegisterRequest } from "@/types/dto/user/request/register";
 import { AuthResponse } from "@/types/dto/user/response/auth_response";
+
 const BASE = "/api/proxy/user-service/auth";
+
 export class AuthService {
     static login(data: LoginRequest) {
         return http.post<ApiResponse<AuthResponse>>(`${BASE}/login`, data);
