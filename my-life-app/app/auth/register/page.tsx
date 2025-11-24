@@ -101,7 +101,6 @@ const RegisterPage: React.FC = () => {
 
         try {
             console.log("Register payload:", payload);
-            await new Promise((r) => setTimeout(r, 500));
             const response = await AuthService.register(payload);
             toast.success("Account created successfully");
         } catch (err: any) {

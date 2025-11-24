@@ -1,5 +1,5 @@
 export const URLPath = {
-    home: "/",
+    home: "/app",
     auth: {
         login: "/auth/login",
         register:"/auth/register"

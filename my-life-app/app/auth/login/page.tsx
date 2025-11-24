@@ -24,6 +24,7 @@ import toast from "react-hot-toast";
 import { AuthService } from "@/services/user/AuthService";
 import { LoginRequest } from "@/types/dto/user/request/login";
 import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/store/useAuthStore";
 // Hapus import hook dan modal global
 // import { useLoading } from "@/hooks/useLoading";
 // import { LoadingModal } from "@/components/modal/LoadingModal";
@@ -85,12 +86,11 @@ const LoginPage: React.FC = () => {
         loading.toggle();
 
         try {
-            await new Promise(resolve => setTimeout(resolve, 2000));
             const response = await AuthService.login(formData);
             if (response.data && response.data.accessToken) {
+                useAuthStore.getState().setAccessToken(response.data.accessToken);
                 toast.success("Login success.");
                 router.push(URLPath.home);
-                console.log("Login successful, token stored in memory.");
             }
             console.log(response.data);
         } catch (error: any) {

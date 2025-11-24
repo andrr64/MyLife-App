@@ -1,20 +1,18 @@
-import Sidebar from "@/components/Sidebar";
+'use client';
+
+import LoadingPage from "@/components/LoadingPage";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { URLPath } from "./path";
 
 export default function Home() {
-  return (
-    <div className="flex min-h-screen bg-zinc-50 dark:bg-black font-sans">
-      {/* Sidebar di kiri */}
-      <Sidebar />
+  const router = useRouter();
 
-      {/* Konten utama */}
-      <main className="flex-1 p-10 bg-white dark:bg-zinc-950">
-        <h1 className="text-2xl font-bold mb-4 text-zinc-900 dark:text-zinc-100">
-          Dashboard
-        </h1>
-        <p className="text-zinc-600 dark:text-zinc-300">
-          Selamat datang di halaman dashboard!
-        </p>
-      </main>
-    </div>
+  useEffect(() => {
+    router.push(URLPath.home);
+  }, [])
+
+  return (
+    <LoadingPage />
   );
 }
