@@ -89,6 +89,33 @@ public class AuthController {
         }
     }
 
+    @PostMapping("/logout")
+    public ApiResponse<Object> logout(HttpServletResponse response) {
+
+        // Hapus access_token
+        ResponseCookie clearAccess = ResponseCookie.from("access_token", "")
+                .httpOnly(true)
+                .secure(false)
+                .sameSite("Lax")
+                .path("/")
+                .maxAge(0) // hapus cookie
+                .build();
+
+        // Hapus refresh_token
+        ResponseCookie clearRefresh = ResponseCookie.from("refresh_token", "")
+                .httpOnly(true)
+                .secure(false)
+                .sameSite("Lax")
+                .path("/")
+                .maxAge(0) // hapus cookie
+                .build();
+
+        response.addHeader("Set-Cookie", clearAccess.toString());
+        response.addHeader("Set-Cookie", clearRefresh.toString());
+
+        return ApiResponse.success("Logout berhasil");
+    }
+
     @PostMapping("/login")
     public ApiResponse<AuthResponse> login(
             @Valid @RequestBody LoginRequest request,
