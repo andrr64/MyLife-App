@@ -117,13 +117,7 @@ const LoginPage: React.FC = () => {
                     <Card className="w-full bg-card/80 backdrop-blur-sm">
                         <CardHeader className="items-center text-center">
                             {/* Header disamakan dengan Register agar konsisten */}
-                            <div className="flex items-center mb-4">
-                                <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 mr-2">
-                                    <path d="M12.6667 4H7.11111C5.39289 4 4 5.39289 4 7.11111V12.6667C4 14.3855 5.39289 15.7778 7.11111 15.7778H12.6667C14.3855 15.7778 15.7778 14.3855 15.7778 12.6667V7.11111C15.7778 5.39289 14.3855 4 12.6667 4Z" fill="hsl(var(--primary))" />
-                                    <path d="M24.8889 16.2222H19.3333C17.6145 16.2222 16.2222 17.6145 16.2222 19.3333V24.8889C16.2222 26.6071 17.6145 28 19.3333 28H24.8889C26.6071 28 28 26.6071 28 24.8889V19.3333C28 17.6145 26.6071 16.2222 24.8889 16.2222Z" fill="hsl(var(--primary))" fillOpacity="0.6" />
-                                </svg>
-                                <span className="text-xl font-bold tracking-tight">{APP_NAME}</span>
-                            </div>
+
                             <CardTitle className="text-2xl">Sign in to MyLife</CardTitle>
                             <CardDescription>
                                 Welcome back. Log in to your life hub.
