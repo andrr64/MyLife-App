@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 // Pastikan import URLPath ini sesuai lokasi file kamu
 import { URLPath } from './app/path'; 
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // 1. Cek Status Login (Baca Cookie)
