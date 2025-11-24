@@ -16,4 +16,8 @@ export class AuthService {
     static register(data: RegisterRequest) {
         return http.post<ApiResponse<string>>(`${BASE}/register`, data);
     }
+
+    static logout(){
+        return http.post(`${BASE}/logout`);
+    }
 }

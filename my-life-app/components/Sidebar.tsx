@@ -16,11 +16,16 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { useTheme } from 'next-themes';
+import { AuthService } from '@/services/user/AuthService';
+import toast from 'react-hot-toast';
+import { useRouter } from 'next/navigation';
+import { URLPath } from '@/app/path';
 
 const Sidebar = () => {
     const { theme, setTheme } = useTheme();
     const [openMenus, setOpenMenus] = useState<string[]>(['Dashboard']);
     const [mounted, setMounted] = useState(false);
+    const router = useRouter();
 
     useEffect(() => {
         setTimeout(() => setMounted(true), 300);
@@ -180,6 +185,15 @@ const Sidebar = () => {
                 <Button
                     variant="ghost"
                     className="w-full justify-start text-sm text-red-500 hover:text-red-600"
+                    onClick={async (e: any) => {
+                        try {
+                            await AuthService.logout();
+                            toast.success('Logout success');
+                            router.push(URLPath.auth.login);
+                        } catch (error) {
+                            toast.error('Failed to logout')
+                        }
+                    }}
                 >
                     <LogOut className="w-4 h-4 mr-3" /> Logout
                 </Button>
