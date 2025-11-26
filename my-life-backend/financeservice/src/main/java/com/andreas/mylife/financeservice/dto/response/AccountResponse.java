@@ -18,7 +18,7 @@ public class AccountResponse {
 
     private UUID id;
     private String name;
-    private String type; // Kirim sebagai String (BANK, CASH) biar fleksibel di JSON
+    private String type; // Kirim sebagai String (BANK, CASH, E_WALLET) biar fleksibel di JSON
     private BigDecimal balance;
     private String currency;
 
