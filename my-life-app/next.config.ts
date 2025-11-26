@@ -9,6 +9,10 @@ const nextConfig: NextConfig = {
         // Tujuan asli (Backend Spring Boot)
         destination: 'http://localhost:8080/api/user-service/:path*', 
       },
+      {
+        source: '/api/proxy/finance-service/:path*',
+        destination: 'http://localhost:8081/api/v1/finance-service/:path*',
+      }
     ];
   },
 };
