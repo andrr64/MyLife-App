@@ -55,7 +55,7 @@ const Sidebar = () => {
     {
       label: 'Dashboard',
       icon: LayoutDashboard,
-      href: '/home',
+      href: URLPath.home,
       // Jika punya submenu, href parent bisa dikosongkan atau diabaikan
       // subMenu: [
       //   { label: 'Overview', href: '/home/dashboard' },
@@ -66,9 +66,23 @@ const Sidebar = () => {
     {
       label: 'Finance',
       icon: Wallet,
-      href: '/home/finance', // Sesuai request user
+      href: URLPath.finance.root, // Sesuai request user
       subMenu: [], // Kosong berarti ini menu tunggal (langsung link)
     },
+    {
+      label: 'Schedule',
+      icon: Calendar,
+      subMenu: [
+        {
+          label: 'Calendar', 
+          href: URLPath.schedule.calendar
+        },
+        {
+          label: 'Task', 
+          href: URLPath.schedule.task
+        },
+      ],
+    }
   ];
 
   if (!mounted) {
@@ -153,7 +167,7 @@ const Sidebar = () => {
                             className={`w-full justify-start h-9 text-sm font-normal
                               ${isSubActive
                                 ? 'bg-accent text-accent-foreground font-medium' // Style Submenu Aktif
-                                : 'text-muted-foreground hover:text-foreground hover:bg-transparent underline-offset-4 hover:underline'
+                                : 'text-muted-foreground hover:text-foreground hover:bg-transparent '
                               }
                             `}
                           >
@@ -214,7 +228,7 @@ const Sidebar = () => {
               alt="Avatar"
             />
             <div className="overflow-hidden">
-              <p className="text-sm font-medium truncate w-[140px]">John Doe</p>
+              <p className="text-sm font-medium truncate w-[140px]">Andreas</p>
               <p className="text-xs text-muted-foreground truncate w-[140px]">john.doe@mail.com</p>
             </div>
           </div>
