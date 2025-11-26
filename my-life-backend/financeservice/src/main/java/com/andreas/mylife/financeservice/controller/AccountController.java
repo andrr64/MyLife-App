@@ -1,5 +1,6 @@
 package com.andreas.mylife.financeservice.controller;
 
+import com.andreas.mylife.common.util.SecurityUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,7 +13,6 @@ import com.andreas.mylife.financeservice.dto.response.AccountResponse;
 import com.andreas.mylife.financeservice.dto.response.ApiResponse;
 import com.andreas.mylife.financeservice.model.AccountType;
 import com.andreas.mylife.financeservice.services.AccountService;
-import com.andreas.mylife.financeservice.util.UserIdExtractor;
 
 import java.util.HashMap;
 import java.util.List;
@@ -34,8 +34,7 @@ public class AccountController {
 	@PostMapping("/add")
 	public ApiResponse<AccountResponse> createAccount(@Valid @RequestBody AccountRequest request) {
 		// 1. Extract User ID dari Token/Security Context
-		UUID userId = UserIdExtractor.extractUserId();
-
+		UUID userId = SecurityUtils.getCurrentUserId();
 		log.info("Request create account for user: {}", userId);
 
 		// 2. Panggil Service
@@ -52,7 +51,7 @@ public class AccountController {
 	@GetMapping
 	public ApiResponse<List<AccountResponse>> getAccounts() {
 		// 1. Extract User ID
-		UUID userId = UserIdExtractor.extractUserId();
+		UUID userId = SecurityUtils.getCurrentUserId();
 
 		// 2. Panggil Service (Get All tanpa pagination)
 		List<AccountResponse> accounts = accountService.getAccountsByUserId(userId);

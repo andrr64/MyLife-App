@@ -1,28 +1,32 @@
-package com.andreas.mylife.financeservice.config;
+package com.andreas.mylife.common.config;
+
 
 import java.io.IOException;
 import java.util.ArrayList;
 
+import jakarta.annotation.Nonnull;
+import lombok.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.andreas.mylife.financeservice.util.JwtVerifier;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import com.andreas.mylife.common.util.JWTVerifier;
 
 @Component
 @RequiredArgsConstructor
-public class JwtAuthenticationFilter extends OncePerRequestFilter {
-    private final JwtVerifier jwtVerifier;
+public class JWTAuthenticationFilter extends OncePerRequestFilter {
+    private final JWTVerifier jwtVerifier;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+    protected void doFilterInternal(
+            @Nonnull HttpServletRequest request, @NonNull HttpServletResponse response, @Nonnull FilterChain filterChain)
             throws ServletException, IOException {
         String token = extractTokenFromCookie(request);
 

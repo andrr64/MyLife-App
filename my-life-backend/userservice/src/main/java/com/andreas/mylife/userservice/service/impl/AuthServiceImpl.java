@@ -14,7 +14,6 @@ import com.andreas.mylife.userservice.exception.EmailAlreadyException;
 import com.andreas.mylife.userservice.model.User;
 import com.andreas.mylife.userservice.repository.UserRepository;
 import com.andreas.mylife.userservice.service.AuthService;
-import com.andreas.mylife.userservice.util.JwtUtil;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +24,6 @@ public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtUtil jwtUtil;
     private final JWTUtil jwtUtil2;
 
     @Override

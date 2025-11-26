@@ -1,12 +1,9 @@
 package com.andreas.mylife.userservice.controller;
 
+import com.andreas.mylife.userservice.dto.response.UserResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
-import org.springframework.web.bind.annotation.CookieValue;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.andreas.mylife.userservice.dto.request.LoginRequest;
 import com.andreas.mylife.userservice.dto.request.RegisterRequest;

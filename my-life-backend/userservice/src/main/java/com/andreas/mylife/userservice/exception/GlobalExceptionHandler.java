@@ -1,9 +1,6 @@
-package com.andreas.mylife.userservice.exception;
+package com.andreas.mylife.userservice.exception; // Package Common
 
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
-
+import com.andreas.mylife.common.dto.ApiResponse; // Pakai DTO Common
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -12,29 +9,33 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import com.andreas.mylife.userservice.dto.response.ApiResponse;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-    // 1. Handle Custom Exception: Email Already Exists (409 Conflict)
-    @ExceptionHandler(EmailAlreadyException.class)
-    public ResponseEntity<ApiResponse<Object>> handleEmailExists(EmailAlreadyException ex) {
-        return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(ApiResponse.error(HttpStatus.CONFLICT, ex.getMessage()));
-    }
 
-    // 2. Handle Spring Security: Bad Credentials (Login Gagal) (401 Unauthorized)
+    // 1. Handle Custom Exception (Pastikan Exception ini juga ada di common atau importnya bener)
+    // Jika EmailAlreadyException spesifik user service, simpan handler-nya di UserService aja (bikin file handler terpisah yg extend ini atau biarin lokal)
+
+    // 2. Handle Spring Security: Login Gagal
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ApiResponse<Object>> handleBadCredentials(BadCredentialsException ex) {
-        // Pesan default Spring kadang terlalu teknis, kita bisa override jika mau.
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(ApiResponse.error(HttpStatus.UNAUTHORIZED, "Invalid credentials"));
+                .body(ApiResponse.error(HttpStatus.UNAUTHORIZED, "Invalid email or password"));
     }
 
-    // 3. Handle Validation Error (@Valid gagal) (400 Bad Request)
+    // 3. Handle SecurityUtils Error (PENTING TAMBAHAN)
+    // Menangani error saat SecurityUtils.getCurrentUserId() gagal
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ApiResponse<Object>> handleSecurityState(IllegalStateException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ApiResponse.error(HttpStatus.UNAUTHORIZED, ex.getMessage()));
+    }
+
+    // 4. Handle Validation Error (@Valid gagal)
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse<Object>> handleValidationErrors(MethodArgumentNotValidException ex) {
-        // Kumpulkan semua field yang error
         Map<String, String> errors = new HashMap<>();
         ex.getBindingResult().getAllErrors().forEach((error) -> {
             String fieldName = ((FieldError) error).getField();
@@ -42,21 +43,19 @@ public class GlobalExceptionHandler {
             errors.put(fieldName, errorMessage);
         });
 
+        // Response konsisten pakai ApiResponse
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ApiResponse.error(HttpStatus.BAD_REQUEST, "Validation Failed", errors));
     }
 
-    // 4. Handle General Exception (Fallback terakhir untuk error tak terduga) (500
-    // Internal Server Error)
-
+    // 5. Handle General Exception (FIXED RETURN TYPE)
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, Object>> handleAll(Exception ex) {
-        ex.printStackTrace(); // buat liat di console
+    public ResponseEntity<ApiResponse<Object>> handleAll(Exception ex) {
+        ex.printStackTrace(); // Log di server
+
+        // JANGAN return Map, return ApiResponse biar konsisten
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of(
-                        "timestamp", LocalDateTime.now().toString(),
-                        "statusCode", 500,
-                        "message", ex.getMessage()));
+                .body(ApiResponse.error(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error: " + ex.getMessage()));
     }
 }

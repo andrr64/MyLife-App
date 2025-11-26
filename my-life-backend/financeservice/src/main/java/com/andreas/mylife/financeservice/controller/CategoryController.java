@@ -3,6 +3,7 @@ package com.andreas.mylife.financeservice.controller;
 import java.util.List;
 import java.util.UUID;
 
+import com.andreas.mylife.common.util.SecurityUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,7 +16,6 @@ import com.andreas.mylife.financeservice.dto.request.CategoryRequest;
 import com.andreas.mylife.financeservice.dto.response.ApiResponse;
 import com.andreas.mylife.financeservice.dto.response.CategoryResponse;
 import com.andreas.mylife.financeservice.services.CategoryService;
-import com.andreas.mylife.financeservice.util.UserIdExtractor;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +30,7 @@ public class CategoryController {
 
     @PostMapping("/add")
     public ApiResponse<CategoryResponse> addCategory(@Valid @RequestBody CategoryRequest request) {
-        UUID userId = UserIdExtractor.extractUserId();
+        UUID userId = SecurityUtils.getCurrentUserId();
         CategoryResponse response = categoryService.createCategory(userId, request);
         return ApiResponse.success(response);
     }
@@ -43,7 +43,7 @@ public class CategoryController {
     public ApiResponse<List<CategoryResponse>> getCategories(
             @RequestParam(required = false) String type) {
 
-        UUID userId = UserIdExtractor.extractUserId();
+        UUID userId = SecurityUtils.getCurrentUserId();
         List<CategoryResponse> response = categoryService.getCategories(userId, type);
         return ApiResponse.success(response);
     }

@@ -1,5 +1,6 @@
 package com.andreas.mylife.financeservice.controller;
 
+import com.andreas.mylife.common.util.SecurityUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -13,7 +14,6 @@ import com.andreas.mylife.financeservice.dto.request.TransactionRequest;
 import com.andreas.mylife.financeservice.dto.response.ApiResponse;
 import com.andreas.mylife.financeservice.dto.response.TransactionResponse;
 import com.andreas.mylife.financeservice.services.TransactionService;
-import com.andreas.mylife.financeservice.util.UserIdExtractor;
 
 import java.util.UUID;
 
@@ -28,7 +28,7 @@ public class TransactionController {
     public ApiResponse<TransactionResponse> createTransaction(
             @Valid @RequestBody TransactionRequest request) {
 
-        UUID userId = UserIdExtractor.extractUserId();
+        UUID userId = SecurityUtils.getCurrentUserId();
         TransactionResponse response = transactionService.createTransaction(userId, request);
 
         return ApiResponse.success(response);
@@ -38,7 +38,7 @@ public class TransactionController {
     public ApiResponse<Page<TransactionResponse>> getHistory(
             @PageableDefault(size = 10, sort = "transactionDate", direction = Sort.Direction.DESC) Pageable pageable) {
 
-        UUID userId = UserIdExtractor.extractUserId();
+        UUID userId = SecurityUtils.getCurrentUserId();
         Page<TransactionResponse> response = transactionService.getUserTransactions(userId, pageable);
 
         return ApiResponse.success(response);
@@ -46,7 +46,7 @@ public class TransactionController {
 
     @GetMapping("/{id}")
     public ApiResponse<TransactionResponse> getDetail(@PathVariable UUID id) {
-        UUID userId = UserIdExtractor.extractUserId();
+        UUID userId = SecurityUtils.getCurrentUserId();
         return ApiResponse.success(transactionService.getTransactionDetail(userId, id));
     }
 }
