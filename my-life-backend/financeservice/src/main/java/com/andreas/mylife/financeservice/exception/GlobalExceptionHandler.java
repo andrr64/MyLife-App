@@ -1,5 +1,6 @@
 package com.andreas.mylife.financeservice.exception;
 
+import com.andreas.mylife.common.dto.ApiResponse;
 import com.andreas.mylife.common.exception.BusinessValidationException;
 import com.andreas.mylife.common.exception.ResourceConflictException;
 import com.andreas.mylife.common.exception.ResourceNotFoundException;
@@ -11,7 +12,6 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import com.andreas.mylife.financeservice.dto.response.ApiResponse;
 
 import java.util.HashMap;
 import java.util.Map;

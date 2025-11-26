@@ -3,6 +3,7 @@ package com.andreas.mylife.financeservice.controller;
 import java.util.List;
 import java.util.UUID;
 
+import com.andreas.mylife.common.dto.ApiResponse;
 import com.andreas.mylife.common.util.SecurityUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,7 +14,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.andreas.mylife.financeservice.common.ApiPath;
 import com.andreas.mylife.financeservice.dto.request.CategoryRequest;
-import com.andreas.mylife.financeservice.dto.response.ApiResponse;
 import com.andreas.mylife.financeservice.dto.response.CategoryResponse;
 import com.andreas.mylife.financeservice.services.CategoryService;
 

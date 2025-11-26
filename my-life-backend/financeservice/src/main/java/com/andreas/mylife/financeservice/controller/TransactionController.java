@@ -1,5 +1,6 @@
 package com.andreas.mylife.financeservice.controller;
 
+import com.andreas.mylife.common.dto.ApiResponse;
 import com.andreas.mylife.common.util.SecurityUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -11,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 
 import com.andreas.mylife.financeservice.common.ApiPath;
 import com.andreas.mylife.financeservice.dto.request.TransactionRequest;
-import com.andreas.mylife.financeservice.dto.response.ApiResponse;
 import com.andreas.mylife.financeservice.dto.response.TransactionResponse;
 import com.andreas.mylife.financeservice.services.TransactionService;
 
