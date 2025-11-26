@@ -1,5 +1,8 @@
 package com.andreas.mylife.financeservice.exception;
 
+import com.andreas.mylife.common.exception.BusinessValidationException;
+import com.andreas.mylife.common.exception.ResourceConflictException;
+import com.andreas.mylife.common.exception.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;

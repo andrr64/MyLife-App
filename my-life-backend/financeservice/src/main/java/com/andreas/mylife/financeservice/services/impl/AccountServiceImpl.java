@@ -1,5 +1,7 @@
 package com.andreas.mylife.financeservice.services.impl;
 
+import com.andreas.mylife.common.exception.BusinessValidationException;
+import com.andreas.mylife.common.exception.ResourceConflictException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -9,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.andreas.mylife.financeservice.dto.request.AccountRequest;
 import com.andreas.mylife.financeservice.dto.response.AccountResponse;
-import com.andreas.mylife.financeservice.exception.BusinessValidationException;
 import com.andreas.mylife.financeservice.model.Account;
 import com.andreas.mylife.financeservice.model.AccountType;
 import com.andreas.mylife.financeservice.repository.AccountRepository;
@@ -35,7 +36,7 @@ public class AccountServiceImpl implements AccountService {
 		// 1. Validasi Bisnis: Cek nama duplikat di user yg sama
 		boolean exists = accountRepository.existsByUserIdAndName(userId, request.getName());
 		if (exists) {
-			throw new BusinessValidationException(
+			throw new ResourceConflictException(
 					"Account with name '" + request.getName() + "' already exists.");
 		}
 

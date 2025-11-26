@@ -2,6 +2,7 @@ package com.andreas.mylife.common.util; // Sesuaikan package common kamu
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+
 import java.util.UUID;
 
 public class SecurityUtils {

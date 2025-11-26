@@ -3,12 +3,13 @@ package com.andreas.mylife.financeservice.services.impl;
 import java.util.List;
 import java.util.UUID;
 
+import com.andreas.mylife.common.exception.BusinessValidationException;
+import com.andreas.mylife.common.exception.ResourceConflictException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.andreas.mylife.financeservice.dto.request.CategoryRequest;
 import com.andreas.mylife.financeservice.dto.response.CategoryResponse;
-import com.andreas.mylife.financeservice.exception.BusinessValidationException;
 import com.andreas.mylife.financeservice.model.Category;
 import com.andreas.mylife.financeservice.model.CategoryType;
 import com.andreas.mylife.financeservice.repository.CategoryRepository;
@@ -36,7 +37,7 @@ public class CategoryServiceImpl implements CategoryService {
         }
         // 2. validasi apakah nama dan tipe kategori sudah exists
         if (categoryRepository.existsCategoryNameForUserOrGlobal(userId, request.getName(), type)) {
-            throw new BusinessValidationException("Category '" + request.getName() + "' already exists for this type.");
+            throw new ResourceConflictException("Category '" + request.getName() + "' already exists for this type.");
         }
 
         // -- CREATE --

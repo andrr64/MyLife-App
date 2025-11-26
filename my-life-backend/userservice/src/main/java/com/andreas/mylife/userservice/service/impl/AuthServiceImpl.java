@@ -2,6 +2,7 @@ package com.andreas.mylife.userservice.service.impl;
 
 import java.util.UUID;
 
+import com.andreas.mylife.common.exception.EmailAlreadyException;
 import com.andreas.mylife.common.util.JWTUtil;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -10,7 +11,7 @@ import org.springframework.stereotype.Service;
 import com.andreas.mylife.userservice.dto.request.LoginRequest;
 import com.andreas.mylife.userservice.dto.request.RegisterRequest;
 import com.andreas.mylife.userservice.dto.response.AuthResponse;
-import com.andreas.mylife.userservice.exception.EmailAlreadyException;
+
 import com.andreas.mylife.userservice.model.User;
 import com.andreas.mylife.userservice.repository.UserRepository;
 import com.andreas.mylife.userservice.service.AuthService;
