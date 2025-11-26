@@ -11,6 +11,7 @@ import {
   LogOut,
   Moon,
   Sun,
+  Wallet, // Icon untuk Finance
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -18,20 +19,16 @@ import { Switch } from '@/components/ui/switch';
 import { useTheme } from 'next-themes';
 import { AuthService } from '@/services/user/AuthService';
 import toast from 'react-hot-toast';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation'; // Tambah usePathname
 import { URLPath } from '@/app/path';
+import { cn } from '@/lib/utils'; // Optional: jika pakai clsx/tailwind-merge, atau bisa pakai string biasa
 
-// 1. Tambahkan Interface untuk Props children
-interface SidebarProps {
-  children: React.ReactNode;
-}
-
-// 2. Terima props children
-const Sidebar = ({ children }: SidebarProps) => {
+const Sidebar = () => {
   const { theme, setTheme } = useTheme();
   const [openMenus, setOpenMenus] = useState<string[]>(['Dashboard']);
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
+  const pathname = usePathname(); // Hook untuk ambil URL aktif
 
   useEffect(() => {
     setTimeout(() => setMounted(true), 300);
@@ -45,146 +42,161 @@ const Sidebar = ({ children }: SidebarProps) => {
     );
   };
 
+  // Fungsi helper untuk cek apakah route aktif
+  const isActive = (path: string) => pathname === path;
+
+  // Fungsi helper untuk cek apakah parent aktif (jika salah satu anaknya aktif)
+  const isParentActive = (subMenu: any[]) => {
+    return subMenu?.some(sub => isActive(sub.href));
+  };
+
+  // Definisi Menu
   const menuItems = [
     {
       label: 'Dashboard',
       icon: LayoutDashboard,
-      subMenu: [{ label: 'Overview' }, { label: 'Reports' }, { label: 'Analytics' }],
+      href: '/home',
+      // Jika punya submenu, href parent bisa dikosongkan atau diabaikan
+      // subMenu: [
+      //   { label: 'Overview', href: '/home/dashboard' },
+      //   { label: 'Reports', href: '/home/dashboard/reports' },
+      //   { label: 'Analytics', href: '/home/dashboard/analytics' }
+      // ],
     },
     {
-      label: 'Activity',
-      icon: Bell,
-      subMenu: [{ label: 'Notifications' }, { label: 'Logs' }],
-    },
-    {
-      label: 'Schedule',
-      icon: Calendar,
-      subMenu: [{ label: 'Calendar' }, { label: 'Tasks' }],
+      label: 'Finance',
+      icon: Wallet,
+      href: '/home/finance', // Sesuai request user
+      subMenu: [], // Kosong berarti ini menu tunggal (langsung link)
     },
   ];
 
-  // Fungsi Render Skeleton (Hanya bagian Aside)
-  const renderSkeleton = () => (
-    <aside className="w-[260px] h-screen border-r border-border bg-background p-5 flex flex-col justify-between animate-pulse flex-shrink-0 sticky top-0">
-      <div>
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-8 h-8 bg-muted rounded-lg" />
-          <div className="space-y-1">
-            <div className="w-20 h-3 bg-muted rounded" />
-            <div className="w-16 h-2 bg-muted rounded" />
-          </div>
-        </div>
-        <div className="space-y-3 mb-8">
-          {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="w-full h-4 bg-muted rounded" />
-          ))}
-        </div>
-      </div>
-      <div>
-        <Separator className="mb-4" />
-        <div className="space-y-3 mb-4">
-          <div className="w-full h-4 bg-muted rounded" />
-          <div className="w-full h-4 bg-muted rounded" />
-        </div>
-      </div>
-    </aside>
-  );
+  if (!mounted) {
+    return (
+      <aside className="w-[260px] h-screen border-r bg-background p-5 animate-pulse" />
+    );
+  }
 
-  // Fungsi Render Sidebar Normal
-  const renderSidebar = () => (
-    <aside className="w-[260px] h-screen sticky top-0 border-r border-border bg-background p-5 flex flex-col justify-between transition-all flex-shrink-0">
-      {/* ===== TOP ===== */}
+  return (
+    <aside className="w-[260px] h-screen sticky top-0 border-r border-border bg-background p-5 flex flex-col justify-between">
+
+      {/* top */}
       <div className="flex-1 overflow-y-auto no-scrollbar">
-        {/* Logo */}
+
+        {/* logo */}
         <div className="flex items-center gap-2 mb-6">
           <div className="w-8 h-8 bg-primary text-primary-foreground flex items-center justify-center rounded-lg font-bold text-lg">
             F
           </div>
           <div>
-            <p className="font-semibold text-base leading-tight">MyLife</p>
+            <p className="font-semibold text-base">MyLife</p>
             <p className="text-xs text-muted-foreground">All-in-one personal management</p>
           </div>
         </div>
 
-        {/* ===== MENU ===== */}
-        <nav className="space-y-2">
+        {/* menu */}
+        <nav className="space-y-1">
           {menuItems.map((menu) => {
+            const hasSubMenu = menu.subMenu && menu.subMenu.length > 0;
             const isOpen = openMenus.includes(menu.label);
+
+            // Cek apakah menu ini (atau anaknya) sedang aktif
+            const isMeActive = !hasSubMenu && isActive(menu.href || '');
+            const isChildActive = hasSubMenu && isParentActive(menu.subMenu);
+
             return (
               <div key={menu.label}>
                 <button
-                  onClick={() => toggleMenu(menu.label)}
-                  className="w-full flex items-center justify-between px-2 py-2 rounded-md hover:bg-accent text-sm font-medium text-foreground/80 transition-colors"
+                  onClick={() => {
+                    if (hasSubMenu) {
+                      toggleMenu(menu.label);
+                    } else if (menu.href) {
+                      router.push(menu.href);
+                    }
+                  }}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-md text-sm font-medium transition-colors mb-1
+                    ${
+                    // Styling untuk Parent Menu
+                    isMeActive
+                      ? 'bg-primary/10 text-primary'  // Aktif (Single Menu)
+                      : isChildActive
+                        ? 'text-foreground font-semibold' // Aktif (Parent dari submenu aktif)
+                        : 'text-muted-foreground hover:bg-accent hover:text-foreground' // Inactive
+                    }
+                  `}
                 >
                   <div className="flex items-center">
-                    <menu.icon className="w-4 h-4 mr-3" />
+                    <menu.icon className={`w-4 h-4 mr-3 ${isMeActive ? 'text-primary' : ''}`} />
                     {menu.label}
                   </div>
-                  {isOpen ? (
-                    <ChevronDown className="w-4 h-4 transition-transform" />
-                  ) : (
-                    <ChevronRight className="w-4 h-4 transition-transform" />
+
+                  {/* Hanya tampilkan chevron jika punya submenu */}
+                  {hasSubMenu && (
+                    isOpen ? <ChevronDown className="w-4 h-4 opacity-50" /> : <ChevronRight className="w-4 h-4 opacity-50" />
                   )}
                 </button>
 
-                <div
-                  className={`ml-9 overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out ${
-                    isOpen ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'
-                  }`}
-                >
-                  <div className="mt-1 space-y-1">
-                    {menu.subMenu.map((sub) => (
-                      <Button
-                        key={sub.label}
-                        variant="ghost"
-                        className="w-full justify-start text-sm text-muted-foreground hover:text-foreground hover:bg-accent"
-                      >
-                        {sub.label}
-                      </Button>
-                    ))}
+                {/* Submenu Area */}
+                {hasSubMenu && (
+                  <div
+                    className={`ml-4 pl-3 border-l border-border transition-all duration-300 overflow-hidden ${isOpen ? 'max-h-96 opacity-100 mt-1' : 'max-h-0 opacity-0'
+                      }`}
+                  >
+                    <div className="space-y-1 pb-2">
+                      {menu.subMenu.map((sub: any) => {
+                        const isSubActive = isActive(sub.href);
+                        return (
+                          <Button
+                            key={sub.label}
+                            variant="ghost"
+                            onClick={() => router.push(sub.href)}
+                            className={`w-full justify-start h-9 text-sm font-normal
+                              ${isSubActive
+                                ? 'bg-accent text-accent-foreground font-medium' // Style Submenu Aktif
+                                : 'text-muted-foreground hover:text-foreground hover:bg-transparent underline-offset-4 hover:underline'
+                              }
+                            `}
+                          >
+                            {sub.label}
+                          </Button>
+                        )
+                      })}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             );
           })}
         </nav>
       </div>
 
-      {/* ===== BOTTOM ===== */}
+      {/* bottom (Sama seperti sebelumnya) */}
       <div className="mt-auto pt-4">
         <Separator className="mb-4" />
-
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2 text-sm text-foreground/80">
-            {theme === 'dark' ? (
-              <Moon className="w-4 h-4" />
-            ) : (
-              <Sun className="w-4 h-4" />
-            )}
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            {theme === 'dark' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
             <span>{theme === 'dark' ? 'Dark Mode' : 'Light Mode'}</span>
           </div>
           <Switch
             checked={theme === 'dark'}
-            onCheckedChange={(val) => setTheme(val ? 'dark' : 'light')}
+            onCheckedChange={(v) => setTheme(v ? 'dark' : 'light')}
           />
         </div>
-
-        <Button
-          variant="ghost"
-          className="w-full justify-start mb-2 text-sm text-foreground/80"
-        >
+        {/* ... sisa tombol logout dsb ... */}
+        <Button variant="ghost" className="w-full justify-start mb-2 text-sm">
           <Settings className="w-4 h-4 mr-3" /> Settings
         </Button>
 
         <Button
           variant="ghost"
-          className="w-full justify-start text-sm text-red-500 hover:text-red-600"
-          onClick={async (e: any) => {
+          className="w-full justify-start text-sm text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30"
+          onClick={async () => {
             try {
               await AuthService.logout();
               toast.success('Logout success');
               router.push(URLPath.auth.login);
-            } catch (error) {
+            } catch {
               toast.error('Failed to logout');
             }
           }}
@@ -198,34 +210,18 @@ const Sidebar = ({ children }: SidebarProps) => {
           <div className="flex items-center">
             <img
               src="https://i.pravatar.cc/40?img=12"
-              alt="Profile"
-              className="w-9 h-9 rounded-full object-cover mr-2"
+              className="w-9 h-9 rounded-full mr-2"
+              alt="Avatar"
             />
-            <div>
-              <p className="text-sm font-medium leading-tight">John Doe</p>
-              <p className="text-xs text-muted-foreground">
-                john.doe@mail.com
-              </p>
+            <div className="overflow-hidden">
+              <p className="text-sm font-medium truncate w-[140px]">John Doe</p>
+              <p className="text-xs text-muted-foreground truncate w-[140px]">john.doe@mail.com</p>
             </div>
           </div>
-          <ChevronDown className="w-4 h-4 text-muted-foreground cursor-pointer" />
         </div>
       </div>
     </aside>
   );
-
-  return (
-    // 3. Wrapper Utama Layout
-    <div className="flex min-h-screen bg-zinc-50 dark:bg-black font-sans">
-      {/* Sidebar Kiri (Skeleton atau Asli) */}
-      {!mounted ? renderSkeleton() : renderSidebar()}
-
-      {/* Konten Utama (Kanan) */}
-      <main className="flex-1 p-10 bg-white dark:bg-zinc-950 overflow-y-auto h-screen">
-        {children}
-      </main>
-    </div>
-  );
-};
+};  
 
 export default Sidebar;
