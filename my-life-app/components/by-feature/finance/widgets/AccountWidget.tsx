@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Plus, AlertCircle, RefreshCw } from 'lucide-react';
+import { AlertCircle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -13,6 +13,8 @@ import {
 import { AccountListSkeleton } from '@/components/skeletons/AccountListSkeleton';
 import { AccountResponse } from '@/types/dto/finance/response/account_response';
 import { motion, AnimatePresence } from 'framer-motion';
+import { AddAccountDialog } from '../dialog/AddAccount';
+import { DetailAccountDialog } from '../dialog/DetailAccount';
 import { getAccountIcon } from '@/utils/IconMapper';
 
 interface AccountsWidgetProps {
@@ -22,7 +24,7 @@ interface AccountsWidgetProps {
 }
 
 export function AccountsWidget({ accounts, loading, error }: AccountsWidgetProps) {
-  
+
   const formatIDR = (value: number) => {
     return new Intl.NumberFormat('id-ID', {
       style: 'currency', currency: 'IDR', minimumFractionDigits: 0,
@@ -36,17 +38,13 @@ export function AccountsWidget({ accounts, loading, error }: AccountsWidgetProps
           <CardTitle className="text-base">My Accounts</CardTitle>
           <CardDescription>Sumber dana tersedia.</CardDescription>
         </div>
-        <Button size="icon" variant="outline" className="h-8 w-8">
-          <Plus className="h-4 w-4" />
-        </Button>
+
+        <AddAccountDialog />
+
       </CardHeader>
-      
-      {/* Tambahkan min-h agar card tidak 'melompat' ukurannya saat transisi */}
+
       <CardContent className="min-h-[200px]">
-        
-        {/* AnimatePresence mode="wait": Tunggu elemen lama hilang dulu baru elemen baru muncul */}
         <AnimatePresence mode="wait">
-          
           {/* STATE 1: LOADING */}
           {loading && (
             <motion.div
@@ -64,9 +62,9 @@ export function AccountsWidget({ accounts, loading, error }: AccountsWidgetProps
           {!loading && error && (
             <motion.div
               key="error"
-              initial={{ opacity: 0, y: 10 }} // Mulai dari agak bawah
-              animate={{ opacity: 1, y: 0 }}  // Muncul ke posisi asli
-              exit={{ opacity: 0, y: -10 }}   // Hilang ke atas
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.3 }}
               className="flex flex-col items-center justify-center py-6 text-red-500 space-y-2 border border-red-200 rounded-md bg-red-50 dark:bg-red-900/10"
             >
@@ -94,12 +92,9 @@ export function AccountsWidget({ accounts, loading, error }: AccountsWidgetProps
               className="text-center py-8 text-muted-foreground text-sm border border-dashed rounded-lg"
             >
               <p>Belum ada akun terdaftar.</p>
-              <Button
-                variant="link"
-                className="text-primary p-0 h-auto font-normal"
-              >
-                + Tambah Akun Baru
-              </Button>
+              <div className="mt-2 flex justify-center">
+                <AddAccountDialog />
+              </div>
             </motion.div>
           )}
 
@@ -116,35 +111,40 @@ export function AccountsWidget({ accounts, loading, error }: AccountsWidgetProps
                 const { icon: Icon, bg } = getAccountIcon(acc.type);
 
                 return (
-                  // Item List dengan Staggered Animation (Muncul satu per satu)
-                  <motion.div
-                    key={acc.id}
-                    variants={{
-                      hidden: { opacity: 0, y: 20 },
-                      visible: { opacity: 1, y: 0 }
-                    }}
-                    transition={{ 
-                        duration: 0.3, 
-                        delay: index * 0.1 // Delay bertahap: item 1 (0s), item 2 (0.1s), item 3 (0.2s)...
-                    }}
-                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer group"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className={`p-2 rounded-md transition-colors ${bg}`}>
-                        <Icon className="w-5 h-5" />
+                  // BUNGKUS ITEM DENGAN DETAIL DIALOG
+                  <DetailAccountDialog key={acc.id} account={acc}>
+                    <motion.div
+                      variants={{
+                        hidden: { opacity: 0, y: 20 },
+                        visible: { opacity: 1, y: 0 }
+                      }}
+                      transition={{
+                        duration: 0.3,
+                        delay: index * 0.1
+                      }}
+                      className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`p-2 rounded-md transition-colors ${bg}`}>
+                          <Icon className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium group-hover:text-primary transition-colors">
+                            {acc.name}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {/* Tampilkan no rekening jika ada, atau ID pendek */}
+                            {`ID: ${acc.id.substring(0, 8)}`}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-sm font-medium group-hover:text-primary transition-colors">
-                          {acc.name}
+                      <div className="text-right">
+                        <p className="text-sm font-bold text-foreground">
+                          {formatIDR(acc.balance)}
                         </p>
                       </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm font-bold text-foreground">
-                        {formatIDR(acc.balance)}
-                      </p>
-                    </div>
-                  </motion.div>
+                    </motion.div>
+                  </DetailAccountDialog>
                 );
               })}
             </motion.div>

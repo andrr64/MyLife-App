@@ -32,8 +32,14 @@ const Sidebar = () => {
   const pathname = usePathname();
   
   // Ambil user dari Store
-  const { user, error } = useUserStore();
+  const { fetchUser, user, error, isInitialized } = useUserStore();
 
+  useEffect(() => {
+    if (!isInitialized){
+      fetchUser();
+    }
+  }, [])
+  
   useEffect(() => {
     setTimeout(() => setMounted(true), 300);
   }, []);

@@ -38,6 +38,8 @@ export const useUserStore = create<UserState>((set, get) => ({
       }
 
     } catch (err: any) {
+      console.log(err);
+      
       console.error("Gagal fetch user:", err);
       set({ 
         user: null, 
