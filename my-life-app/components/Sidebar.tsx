@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from 'react';
 import {
   LayoutDashboard,
-  Bell,
   Calendar,
   ChevronRight,
   ChevronDown,
@@ -11,7 +10,7 @@ import {
   LogOut,
   Moon,
   Sun,
-  Wallet, // Icon untuk Finance
+  Wallet,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -19,16 +18,21 @@ import { Switch } from '@/components/ui/switch';
 import { useTheme } from 'next-themes';
 import { AuthService } from '@/services/user/AuthService';
 import toast from 'react-hot-toast';
-import { useRouter, usePathname } from 'next/navigation'; // Tambah usePathname
+import { useRouter, usePathname } from 'next/navigation';
 import { URLPath } from '@/app/path';
-import { cn } from '@/lib/utils'; // Optional: jika pakai clsx/tailwind-merge, atau bisa pakai string biasa
+// Sesuaikan path import ini dengan lokasi file useUserStore kamu
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useUserStore } from '@/store/useUserStore';
 
 const Sidebar = () => {
   const { theme, setTheme } = useTheme();
   const [openMenus, setOpenMenus] = useState<string[]>(['Dashboard']);
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
-  const pathname = usePathname(); // Hook untuk ambil URL aktif
+  const pathname = usePathname();
+  
+  // Ambil user dari Store
+  const { user, error } = useUserStore();
 
   useEffect(() => {
     setTimeout(() => setMounted(true), 300);
@@ -42,48 +46,51 @@ const Sidebar = () => {
     );
   };
 
-  // Fungsi helper untuk cek apakah route aktif
   const isActive = (path: string) => pathname === path;
 
-  // Fungsi helper untuk cek apakah parent aktif (jika salah satu anaknya aktif)
   const isParentActive = (subMenu: any[]) => {
-    return subMenu?.some(sub => isActive(sub.href));
+    return subMenu?.some((sub) => isActive(sub.href));
   };
 
-  // Definisi Menu
   const menuItems = [
     {
       label: 'Dashboard',
       icon: LayoutDashboard,
       href: URLPath.home,
-      // Jika punya submenu, href parent bisa dikosongkan atau diabaikan
-      // subMenu: [
-      //   { label: 'Overview', href: '/home/dashboard' },
-      //   { label: 'Reports', href: '/home/dashboard/reports' },
-      //   { label: 'Analytics', href: '/home/dashboard/analytics' }
-      // ],
     },
     {
       label: 'Finance',
       icon: Wallet,
-      href: URLPath.finance.root, // Sesuai request user
-      subMenu: [], // Kosong berarti ini menu tunggal (langsung link)
+      href: URLPath.finance.root,
+      subMenu: [],
     },
     {
       label: 'Schedule',
       icon: Calendar,
       subMenu: [
         {
-          label: 'Calendar', 
-          href: URLPath.schedule.calendar
+          label: 'Calendar',
+          href: URLPath.schedule.calendar,
         },
         {
-          label: 'Task', 
-          href: URLPath.schedule.task
+          label: 'Task',
+          href: URLPath.schedule.task,
         },
       ],
-    }
+    },
   ];
+
+  // Helper untuk mendapatkan nama belakang (Last Name)
+  // Logic: Split spasi -> Ambil elemen terakhir (slice -1)
+  const getLastName = () => {
+    if (error){
+      return 'Unknown (Error)'
+    }
+    if (!user?.fullName) return 'Guest';
+    const names = user.fullName.split(' ');
+    // slice(-1) mengembalikan array berisi 1 elemen terakhir, jadi perlu [0]
+    return names.slice(-1)[0]; 
+  };
 
   if (!mounted) {
     return (
@@ -93,10 +100,8 @@ const Sidebar = () => {
 
   return (
     <aside className="w-[260px] h-screen sticky top-0 border-r border-border bg-background p-5 flex flex-col justify-between">
-
       {/* top */}
       <div className="flex-1 overflow-y-auto no-scrollbar">
-
         {/* logo */}
         <div className="flex items-center gap-2 mb-6">
           <div className="w-8 h-8 bg-primary text-primary-foreground flex items-center justify-center rounded-lg font-bold text-lg">
@@ -104,7 +109,9 @@ const Sidebar = () => {
           </div>
           <div>
             <p className="font-semibold text-base">MyLife</p>
-            <p className="text-xs text-muted-foreground">All-in-one personal management</p>
+            <p className="text-xs text-muted-foreground">
+              All-in-one personal management
+            </p>
           </div>
         </div>
 
@@ -113,8 +120,6 @@ const Sidebar = () => {
           {menuItems.map((menu) => {
             const hasSubMenu = menu.subMenu && menu.subMenu.length > 0;
             const isOpen = openMenus.includes(menu.label);
-
-            // Cek apakah menu ini (atau anaknya) sedang aktif
             const isMeActive = !hasSubMenu && isActive(menu.href || '');
             const isChildActive = hasSubMenu && isParentActive(menu.subMenu);
 
@@ -130,31 +135,37 @@ const Sidebar = () => {
                   }}
                   className={`w-full flex items-center justify-between px-3 py-2.5 rounded-md text-sm font-medium transition-colors mb-1
                     ${
-                    // Styling untuk Parent Menu
-                    isMeActive
-                      ? 'bg-primary/10 text-primary'  // Aktif (Single Menu)
-                      : isChildActive
-                        ? 'text-foreground font-semibold' // Aktif (Parent dari submenu aktif)
-                        : 'text-muted-foreground hover:bg-accent hover:text-foreground' // Inactive
+                      isMeActive
+                        ? 'bg-primary/10 text-primary'
+                        : isChildActive
+                        ? 'text-foreground font-semibold'
+                        : 'text-muted-foreground hover:bg-accent hover:text-foreground'
                     }
                   `}
                 >
                   <div className="flex items-center">
-                    <menu.icon className={`w-4 h-4 mr-3 ${isMeActive ? 'text-primary' : ''}`} />
+                    <menu.icon
+                      className={`w-4 h-4 mr-3 ${
+                        isMeActive ? 'text-primary' : ''
+                      }`}
+                    />
                     {menu.label}
                   </div>
 
-                  {/* Hanya tampilkan chevron jika punya submenu */}
-                  {hasSubMenu && (
-                    isOpen ? <ChevronDown className="w-4 h-4 opacity-50" /> : <ChevronRight className="w-4 h-4 opacity-50" />
-                  )}
+                  {hasSubMenu &&
+                    (isOpen ? (
+                      <ChevronDown className="w-4 h-4 opacity-50" />
+                    ) : (
+                      <ChevronRight className="w-4 h-4 opacity-50" />
+                    ))}
                 </button>
 
                 {/* Submenu Area */}
                 {hasSubMenu && (
                   <div
-                    className={`ml-4 pl-3 border-l border-border transition-all duration-300 overflow-hidden ${isOpen ? 'max-h-96 opacity-100 mt-1' : 'max-h-0 opacity-0'
-                      }`}
+                    className={`ml-4 pl-3 border-l border-border transition-all duration-300 overflow-hidden ${
+                      isOpen ? 'max-h-96 opacity-100 mt-1' : 'max-h-0 opacity-0'
+                    }`}
                   >
                     <div className="space-y-1 pb-2">
                       {menu.subMenu.map((sub: any) => {
@@ -165,15 +176,16 @@ const Sidebar = () => {
                             variant="ghost"
                             onClick={() => router.push(sub.href)}
                             className={`w-full justify-start h-9 text-sm font-normal
-                              ${isSubActive
-                                ? 'bg-accent text-accent-foreground font-medium' // Style Submenu Aktif
-                                : 'text-muted-foreground hover:text-foreground hover:bg-transparent '
+                              ${
+                                isSubActive
+                                  ? 'bg-accent text-accent-foreground font-medium'
+                                  : 'text-muted-foreground hover:text-foreground hover:bg-transparent '
                               }
                             `}
                           >
                             {sub.label}
                           </Button>
-                        )
+                        );
                       })}
                     </div>
                   </div>
@@ -184,12 +196,16 @@ const Sidebar = () => {
         </nav>
       </div>
 
-      {/* bottom (Sama seperti sebelumnya) */}
+      {/* bottom */}
       <div className="mt-auto pt-4">
         <Separator className="mb-4" />
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            {theme === 'dark' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+            {theme === 'dark' ? (
+              <Moon className="w-4 h-4" />
+            ) : (
+              <Sun className="w-4 h-4" />
+            )}
             <span>{theme === 'dark' ? 'Dark Mode' : 'Light Mode'}</span>
           </div>
           <Switch
@@ -197,7 +213,7 @@ const Sidebar = () => {
             onCheckedChange={(v) => setTheme(v ? 'dark' : 'light')}
           />
         </div>
-        {/* ... sisa tombol logout dsb ... */}
+        
         <Button variant="ghost" className="w-full justify-start mb-2 text-sm">
           <Settings className="w-4 h-4 mr-3" /> Settings
         </Button>
@@ -220,22 +236,31 @@ const Sidebar = () => {
 
         <Separator className="my-4" />
 
+        {/* USER PROFILE SECTION */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            <img
-              src="https://i.pravatar.cc/40?img=12"
-              className="w-9 h-9 rounded-full mr-2"
-              alt="Avatar"
-            />
-            <div className="overflow-hidden">
-              <p className="text-sm font-medium truncate w-[140px]">Andreas</p>
-              <p className="text-xs text-muted-foreground truncate w-[140px]">john.doe@mail.com</p>
+          <div className="flex items-center w-full">
+            
+            {/* Avatar dengan Fallback Inisial */}
+            <Avatar className="w-9 h-9 mr-2">
+                <AvatarImage src={user?.avatar || ""} />
+                <AvatarFallback>{getLastName().charAt(0)}</AvatarFallback>
+            </Avatar>
+
+            <div className="overflow-hidden flex-1">
+              <p className="text-sm font-medium truncate w-full">
+                {/* Tampilkan Last Name */}
+                {getLastName()}
+              </p>
+              <p className="text-xs text-muted-foreground truncate w-full">
+                {/* Tampilkan Email */}
+                {user?.email || 'No Email'}
+              </p>
             </div>
           </div>
         </div>
       </div>
     </aside>
   );
-};  
+};
 
 export default Sidebar;

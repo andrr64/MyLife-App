@@ -14,7 +14,7 @@ export function proxy(request: NextRequest) {
   const isLoggedIn = !!accessToken || !!refreshToken;
 
   // Debugging (Bisa dihapus nanti kalau sudah stable)
-  console.log(`[Middleware] Path: ${pathname} | Status: ${isLoggedIn ? 'Login' : 'Guest'}`);
+  //  console.log(`[Middleware] Path: ${pathname} | Status: ${isLoggedIn ? 'Login' : 'Guest'}`);
 
   // =================================================================
   // LOGIC 1: PROTEKSI HALAMAN PRIVATE (/app)
