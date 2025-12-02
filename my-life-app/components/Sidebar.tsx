@@ -35,12 +35,6 @@ const Sidebar = () => {
   const { fetchUser, user, error, isInitialized } = useUserStore();
 
   useEffect(() => {
-    if (!isInitialized){
-      fetchUser();
-    }
-  }, [])
-  
-  useEffect(() => {
     setTimeout(() => setMounted(true), 300);
   }, []);
 

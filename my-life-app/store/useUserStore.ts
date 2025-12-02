@@ -7,6 +7,7 @@ interface UserState {
   isLoading: boolean;
   error: string | null;
   isInitialized: boolean;
+  isUnauthorized: boolean;
 
   fetchUser: () => Promise<void>;
   reset: () => void;
@@ -17,7 +18,7 @@ export const useUserStore = create<UserState>((set, get) => ({
   isLoading: false,
   error: null,
   isInitialized: false,
-
+  isUnauthorized: false,
   fetchUser: async () => {
     // Optional: Kalau sudah ada data/sudah init, gak usah fetch lagi (Cache mechanism)
     // if (get().isInitialized) return; 
@@ -26,25 +27,23 @@ export const useUserStore = create<UserState>((set, get) => ({
 
     try {
       const response = await UserService.me();
-      
+
       // Asumsi struktur response: response.data (axios body) -> .data (ApiResponse body)
       if (response.data) {
-        set({ 
-          user: response.data, 
-          isInitialized: true 
+        set({
+          user: response.data,
+          isInitialized: true
         });
       } else {
         throw new Error("Data user kosong");
       }
 
     } catch (err: any) {
-      console.log(err);
-      
-      console.error("Gagal fetch user:", err);
-      set({ 
-        user: null, 
-        error: err.message || "Gagal mengambil data user", 
-        isInitialized: true 
+      set({
+        user: null,
+        error: err.message || "Gagal mengambil data user",
+        isInitialized: true,
+        isUnauthorized: err.status == 401
       });
     } finally {
       set({ isLoading: false });
@@ -52,6 +51,6 @@ export const useUserStore = create<UserState>((set, get) => ({
   },
 
   reset: () => {
-    set({ user: null, isLoading: false, error: null, isInitialized: false });
+    set({ user: null, isLoading: false, error: null, isInitialized: false, isUnauthorized: false });
   }
 }));
