@@ -20,6 +20,7 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(userId).orElseThrow( () -> new BadCredentialsException("OK"));
         return UserResponse.builder()
                 .fullName(user.getFullName())
+                .email(user.getEmail())
                 .build();
     }
 }
