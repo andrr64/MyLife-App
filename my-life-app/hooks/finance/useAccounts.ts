@@ -1,37 +1,34 @@
-// hooks/useAccounts.ts
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { AccountService } from '@/services/finance/AccountService';
 import { AccountResponse } from '@/types/dto/finance/response/account_response';
 
 export function useAccounts() {
     const [data, setData] = useState<AccountResponse[]>([]);
-    const [loading, setLoading] = useState<boolean>(true);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            setLoading(true);
-            try {
-                // Panggil Service
-                const response = await AccountService.getUserAccounts();
+    const fetchAccounts = useCallback(async () => {
+        setLoading(true);
+        setError(null);
 
-                // Asumsi response.data adalah wrapper ApiResponse, dan didalamnya ada field 'data'
-                // Sesuaikan dengan struktur Axios/Http Helper kamu
-                if (response.data) {
-                    setData(response.data); // Ambil array akunnya
-                } else {
-                    throw new Error("No data received");
-                }
-            } catch (err: any) {
-                console.error("Failed to fetch accounts:", err);
-                setError(err.message || "Gagal memuat data akun.");
-            } finally {
-                setLoading(false);
+        try {
+            const response = await AccountService.getUserAccounts();
+            if (response.data) {
+                setData(response.data);
+            } else {
+                throw new Error("No data received");
             }
-        };
-
-        fetchData();
+        } catch (err: any) {
+            console.error("Failed to fetch accounts:", err);
+            setError(err.message || "Gagal memuat data akun.");
+        } finally {
+            setLoading(false);
+        }
     }, []);
 
-    return { data, loading, error };
+    useEffect(() => {
+        fetchAccounts();
+    }, [fetchAccounts]);
+
+    return { data, loading, error, refetch: fetchAccounts };
 }
