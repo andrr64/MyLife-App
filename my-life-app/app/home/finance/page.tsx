@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAccounts } from '@/hooks/finance/useAccounts';
 import { FinanceHeader } from '@/components/by-feature/finance/FinanceHeader';
@@ -8,6 +7,7 @@ import { FinanceStats } from '@/components/by-feature/finance/FinanceStats';
 import { CashFlowChart } from '@/components/by-feature/finance/CashFlowChart';
 import { AccountsWidget } from '@/components/by-feature/finance/widgets/AccountWidget';
 import { RecentTransactionsWidget } from '@/components/by-feature/finance/widgets/RecentTransactionWidget';
+import { useCategories } from '@/hooks/finance/useCategory';
 
 // Hooks
 // Components
@@ -15,6 +15,7 @@ import { RecentTransactionsWidget } from '@/components/by-feature/finance/widget
 function FinancePage() {
     // 1. Data Fetching
     const { data: accounts, loading, error } = useAccounts();
+    const categoriyHook = useCategories();
 
     // 2. Logic (Calculate Total Balance for KPI)
     const totalBalance = accounts.reduce((acc, curr) => acc + curr.balance, 0);
@@ -49,6 +50,8 @@ function FinancePage() {
                             <AccountsWidget
                                 accounts={accounts}
                                 loading={loading}
+                                incomeCategories={categoriyHook.incomeCt}
+                                expenseCategories={categoriyHook.expenseCt}
                                 error={error}
                             />
                             <RecentTransactionsWidget />

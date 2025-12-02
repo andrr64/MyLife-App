@@ -16,14 +16,18 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { AddAccountDialog } from '../dialog/AddAccount';
 import { DetailAccountDialog } from '../dialog/DetailAccount';
 import { getAccountIcon } from '@/utils/IconMapper';
+import { AddTransactionDialog } from '../dialog/AddTransaction';
+import { CategoryResponse } from '@/types/dto/finance/response/category_response';
 
 interface AccountsWidgetProps {
   accounts: AccountResponse[];
+  incomeCategories: CategoryResponse[];
+  expenseCategories: CategoryResponse[];
   loading: boolean;
   error: string | null;
 }
 
-export function AccountsWidget({ accounts, loading, error }: AccountsWidgetProps) {
+export function AccountsWidget({ accounts, incomeCategories, expenseCategories, loading, error }: AccountsWidgetProps) {
 
   const formatIDR = (value: number) => {
     return new Intl.NumberFormat('id-ID', {
@@ -33,14 +37,20 @@ export function AccountsWidget({ accounts, loading, error }: AccountsWidgetProps
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <div className="space-y-1">
-          <CardTitle className="text-base">My Accounts</CardTitle>
-          <CardDescription>Sumber dana tersedia.</CardDescription>
+      <CardHeader className="flex space-y-4 flex-col pb-2">
+        <div className='flex flex-row w-full justify-between'>
+          <div className="space-y-1">
+            <CardTitle className="text-base">My Accounts</CardTitle>
+            <CardDescription>Sumber dana tersedia.</CardDescription>
+          </div>
         </div>
+        <div className='flex flex-row space-x-2'>
+          <AddAccountDialog />
 
-        <AddAccountDialog />
-
+          {accounts.length > 0 && (
+            <AddTransactionDialog accounts={accounts} incomeCategories={incomeCategories} expenseCategories={expenseCategories}/>
+          )}
+        </div>
       </CardHeader>
 
       <CardContent className="min-h-[200px]">

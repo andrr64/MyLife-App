@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Plus, Loader2 } from 'lucide-react';
+import { Plus, Loader2, Banknote } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -59,7 +59,7 @@ export function AddAccountDialog() {
       setFormData({ name: '', type: '', initialBalance: 0 }); // Reset form
 
       // Refresh halaman untuk memuat data baru
-      router.refresh(); 
+      router.refresh();
       window.location.reload(); // Fallback hard refresh agar data update instan
     } catch (error: any) {
       console.error(error);
@@ -71,12 +71,16 @@ export function AddAccountDialog() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      {/* Trigger Button (Tombol Plus) */}
       <DialogTrigger asChild>
-        <Button size="icon" variant="outline" className="h-8 w-8">
-          <Plus className="h-4 w-4" />
+        <Button
+          variant="outline"
+          className="h-8 px-3 flex items-center gap-2"
+        >
+          <Banknote className="h-4 w-4" />
+          <span className="text-sm">Add Account</span>
         </Button>
       </DialogTrigger>
+
 
       {/* Konten Modal */}
       <DialogContent className="sm:max-w-[425px]">
