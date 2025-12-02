@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
@@ -58,5 +59,5 @@ public class TransactionRequest {
      * Boleh null (nanti backend otomatis pakai waktu sekarang/NOW).
      * Format JSON: "2025-11-16T10:00:00Z"
      */
-    private ZonedDateTime transactionDate;
+    private Instant transactionDate;
 }

@@ -1,6 +1,5 @@
 package com.andreas.mylife.financeservice.controller;
 
-
 import com.andreas.mylife.common.dto.ApiResponse;
 import com.andreas.mylife.common.util.SecurityUtils;
 import com.andreas.mylife.financeservice.common.ApiPath;
@@ -11,8 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 @RestController
@@ -24,6 +22,9 @@ public class DashboardController {
     @GetMapping("/previous-month-balance")
     public ApiResponse<BigDecimal> getPrevMonthBalance(){
         UUID userId = SecurityUtils.getCurrentUserId();
-        return ApiResponse.success(dashboardService.getPrevMonthBalance(LocalDate.now(), userId));
+
+        // Pass Instant.now() (Waktu server saat ini dalam UTC)
+        // Service layer yang akan mengonversinya ke Zone Jakarta untuk perhitungan bulan
+        return ApiResponse.success(dashboardService.getPrevMonthBalance(Instant.now(), userId));
     }
 }

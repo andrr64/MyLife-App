@@ -48,7 +48,7 @@ public class TransactionServiceImpl implements TransactionService {
         // KONVERSI WAKTU: Ambil dari request (ZonedDateTime) -> Convert ke Instant (UTC)
         // Jika request null, pakai Instant.now()
         Instant transactionTime = request.getTransactionDate() != null
-                ? request.getTransactionDate().toInstant()
+                ? request.getTransactionDate()
                 : Instant.now();
 
         Transaction savedTransaction;
