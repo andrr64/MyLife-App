@@ -6,10 +6,11 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp; // Tambahan Enterprise
 import org.hibernate.annotations.ColumnDefault;
 
 import java.math.BigDecimal;
-import java.time.ZonedDateTime;
+import java.time.Instant; // GANTI INI
 import java.util.UUID;
 
 @Entity
@@ -28,21 +29,15 @@ public class Account {
     private UUID userId;
 
     @Column(nullable = false, length = 100)
-    private String name; // Contoh: "BCA Utama", "Shopee PayLater", "Dompet Fisik"
+    private String name;
 
-    // --- STRICT TYPING ---
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
     private AccountType type;
-    // Database akan nyimpen: 'BANK', 'PAYLATER', 'CASH', dll.
 
-    // Kita simpan saldonya.
-    // Logic Bisnis:
-    // Jika tipe ASSET (Bank), balance 1jt = Punya uang 1jt.
-    // Jika tipe LIABILITY (Paylater), balance 1jt = Punya utang 1jt.
     @Column(nullable = false, precision = 19, scale = 4)
     @ColumnDefault("0")
-    private BigDecimal balance ;
+    private BigDecimal balance;
 
     @Column(length = 3, columnDefinition = "CHAR(3)")
     @ColumnDefault("'IDR'")
@@ -50,21 +45,23 @@ public class Account {
 
     @Column(name = "is_active", nullable = false)
     @ColumnDefault("true")
-    private Boolean isActive; // Fitur soft delete/arsip akun (misal kartu kredit ditutup)
+    private Boolean isActive;
+
+    // --- AUDIT FIELDS ---
 
     @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
-    private ZonedDateTime createdAt;
+    @Column(name = "created_at", updatable = false, nullable = false)
+    private Instant createdAt; // Ubah ke Instant
 
-    // --- HELPER METHODS (Optional tapi Berguna) ---
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private Instant updatedAt; // Tambahan untuk tracking perubahan
 
-    // Method ini berguna buat UI atau logic hitung Net Worth
+    // ... helper methods tetap sama
     public boolean isLiability() {
         return this.type.getCategory() == AccountType.AccountCategory.LIABILITY;
     }
 
-    // Mendapatkan nilai "Real" untuk perhitungan kekayaan
-    // Kalau Paylater isinya 500rb, berarti kekayaan -500rb
     public BigDecimal getNetWorthValue() {
         if (isLiability()) {
             return this.balance.negate();

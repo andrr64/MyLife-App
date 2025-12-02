@@ -6,9 +6,10 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
-import java.time.ZonedDateTime;
+import java.time.Instant; // GANTI INI
 import java.util.UUID;
 
 @Entity
@@ -29,12 +30,10 @@ public class Transaction {
     @Column(name = "user_id", nullable = false)
     private UUID userId;
 
-    // Relasi ke Account (Many to One)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_id", nullable = false)
     private Account account;
 
-    // Relasi ke Category (Many to One)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     private Category category;
@@ -46,20 +45,23 @@ public class Transaction {
     @Column(nullable = false, length = 10)
     private TransactionType type;
 
+    // Kapan transaksi terjadi (secara real/bisnis)
+    // Disimpan dalam UTC
     @Column(name = "transaction_date", nullable = false)
-    private ZonedDateTime transactionDate;
+    private Instant transactionDate;
 
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    // Self-Referencing Relationship untuk Transfer Pair
-    // Menggunakan OneToOne karena satu transaksi transfer pasti cuma punya 1
-    // pasangan
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "transfer_pair_id")
     private Transaction transferPair;
 
     @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
-    private ZonedDateTime createdAt;
+    @Column(name = "created_at", updatable = false, nullable = false)
+    private Instant createdAt; // Kapan data diinput ke sistem
+
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private Instant updatedAt;
 }

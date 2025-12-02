@@ -4,50 +4,55 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.andreas.mylife.financeservice.model.Transaction;
 
-import java.time.ZonedDateTime;
+import java.math.BigDecimal;
+import java.time.Instant; // PAKE INSTANT
 import java.util.UUID;
 
 @Repository
 public interface TransactionRepository extends JpaRepository<Transaction, UUID> {
 
-    // 1. HISTORY TRANSAKSI UTAMA (Wajib Pagination)
-    // "JOIN FETCH" memaksa Hibernate mengambil data Account & Category SEKALIGUS
-    // dalam 1 query.
-    // Ini mencegah N+1 Problem yang bikin aplikasi lemot.
-    // PERBAIKAN QUERY: Handle NULL parameter
+    // 1. HISTORY TRANSAKSI UTAMA
+    // Perbaikan:
+    // - Parameter ganti ke Instant
+    // - HAPUS CAST manual. Hibernate akan otomatis mapping Instant ke timestamptz Postgres.
     @Query(value = "SELECT t FROM Transaction t " +
             "JOIN FETCH t.account " +
             "LEFT JOIN FETCH t.category " +
             "WHERE t.userId = :userId " +
-            // CAST biar Postgres tau ini tipe data timestamp (waktu)
-            "AND (CAST(:startDate AS timestamp) IS NULL OR t.transactionDate >= :startDate) " +
-            "AND (CAST(:endDate AS timestamp) IS NULL OR t.transactionDate <= :endDate)",
+            "AND (:startDate IS NULL OR t.transactionDate >= :startDate) " +
+            "AND (:endDate IS NULL OR t.transactionDate <= :endDate)",
 
-            // COUNT QUERY JUGA WAJIB DIPERBAIKI
             countQuery = "SELECT COUNT(t) FROM Transaction t WHERE t.userId = :userId " +
-                    "AND (CAST(:startDate AS timestamp) IS NULL OR t.transactionDate >= :startDate) " +
-                    "AND (CAST(:endDate AS timestamp) IS NULL OR t.transactionDate <= :endDate)")
-    Page<Transaction> findHistory(UUID userId, ZonedDateTime startDate, ZonedDateTime endDate, Pageable pageable);
+                    "AND (:startDate IS NULL OR t.transactionDate >= :startDate) " +
+                    "AND (:endDate IS NULL OR t.transactionDate <= :endDate)")
+    Page<Transaction> findHistory(
+            @Param("userId") UUID userId,
+            @Param("startDate") Instant startDate,
+            @Param("endDate") Instant endDate,
+            Pageable pageable
+    );
 
-    // 2. Filter per Akun (Misal: History spesifik dompet BCA)
+    // 2. Filter per Akun
     Page<Transaction> findByAccountId(UUID accountId, Pageable pageable);
 
-    // 3. Cek Pasangan Transfer (Untuk keperluan update/delete)
-    // Karena OneToOne lazy, kita query manual biar aman
+    // 3. Cek Pasangan Transfer
     @Query("SELECT t FROM Transaction t WHERE t.transferPair.id = :pairId")
-    Transaction findLinkedTransfer(UUID pairId);
+    Transaction findLinkedTransfer(@Param("pairId") UUID pairId);
 
-    // 4. Dashboard Summary: Total Pemasukan/Pengeluaran bulan ini
-    // Jauh lebih cepat hitung di DB daripada tarik semua data ke Java lalu loop
-    /*
-     * @Query("SELECT SUM(t.amount) FROM Transaction t " +
-     * "WHERE t.userId = :userId AND t.type = 'EXPENSE' " +
-     * "AND t.transactionDate BETWEEN :start AND :end")
-     * BigDecimal sumExpenseByUserAndDate(UUID userId, ZonedDateTime start,
-     * ZonedDateTime end);
-     */
+    // 4. Dashboard Summary
+    // Menggunakan COALESCE agar jika tidak ada data, return 0 (bukan NULL)
+    @Query("SELECT COALESCE(SUM(t.amount), 0) FROM Transaction t " +
+            "WHERE t.userId = :userId " +
+            "AND t.transactionDate >= :startDate " +
+            "AND t.transactionDate <= :endDate")
+    BigDecimal sumMutationByUserAndDateRange(
+            @Param("userId") UUID userId,
+            @Param("startDate") Instant startDate,
+            @Param("endDate") Instant endDate
+    );
 }

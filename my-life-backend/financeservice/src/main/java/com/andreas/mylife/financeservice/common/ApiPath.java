@@ -11,4 +11,5 @@ public final class ApiPath {
     public static final String CATEGORY = BASE_API + "/category";
     public static final String ACCOUNT = BASE_API + "/account";
     public static final String TRANSACTION = BASE_API + "/transaction";
+    public static final String DASHBOARD = BASE_API + "/dashboard";
 }

@@ -6,8 +6,9 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
-import java.time.ZonedDateTime;
+import java.time.Instant; // GANTI INI
 import java.util.UUID;
 
 @Entity
@@ -19,7 +20,7 @@ import java.util.UUID;
 public class Category {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // Mengikuti BIGSERIAL
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "user_id", nullable = false)
@@ -33,6 +34,10 @@ public class Category {
     private CategoryType type;
 
     @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
-    private ZonedDateTime createdAt;
+    @Column(name = "created_at", updatable = false, nullable = false)
+    private Instant createdAt; // Ubah ke Instant
+
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private Instant updatedAt;
 }
