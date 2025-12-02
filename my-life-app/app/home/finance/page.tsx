@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react'; // 1. Import useState
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAccounts } from '@/hooks/finance/useAccounts';
 import { FinanceHeader } from '@/components/by-feature/finance/FinanceHeader';
@@ -9,24 +10,38 @@ import { AccountsWidget } from '@/components/by-feature/finance/widgets/AccountW
 import { RecentTransactionsWidget } from '@/components/by-feature/finance/widgets/RecentTransactionWidget';
 import { useCategories } from '@/hooks/finance/useCategory';
 
-// Hooks
-// Components
-
 function FinancePage() {
-    // 1. Data Fetching
-    const { data: accounts, loading, error } = useAccounts();
-    const categoriyHook = useCategories();
+    // 2. State untuk memaksa refresh komponen anak (Chart & Recent Transaction)
+    const [refreshKey, setRefreshKey] = useState(0);
 
-    // 2. Logic (Calculate Total Balance for KPI)
+    // 3. Panggil useAccounts SEKALI saja, ambil data DAN refetch-nya
+    const { 
+        data: accounts, 
+        loading, 
+        error, 
+        refetch: refetchAccounts 
+    } = useAccounts();
+    
+    const categoryHook = useCategories();
+
+    // Logic KPI
     const totalBalance = accounts.reduce((acc, curr) => acc + curr.balance, 0);
+
+    // 4. Buat handler terpusat saat transaksi sukses
+    const handleTransactionSuccess = () => {
+        console.log("Transaction Success Triggered!");
+        
+        // A. Refresh data akun (agar saldo update)
+        refetchAccounts();
+        
+        // B. Ubah key untuk memaksa Chart & History re-mount (fetch ulang data baru)
+        setRefreshKey(prev => prev + 1);
+    };
 
     return (
         <div className="flex-1 space-y-6 p-8 pt-6 bg-background min-h-screen">
-
-            {/* 1. HEADER */}
             <FinanceHeader />
 
-            {/* 2. TABS & CONTENT */}
             <Tabs defaultValue="overview" className="space-y-4">
                 <TabsList>
                     <TabsTrigger value="overview">Overview</TabsTrigger>
@@ -35,28 +50,29 @@ function FinancePage() {
                 </TabsList>
 
                 <TabsContent value="overview" className="space-y-4">
-
-                    {/* A. KPI CARDS */}
                     <FinanceStats totalBalance={totalBalance} isLoading={loading} />
 
-                    {/* B. MAIN GRID */}
                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+                        {/* 5. Pasang key={refreshKey} disini.
+                           Saat refreshKey berubah, komponen ini akan destroy & create ulang,
+                           otomatis memanggil API fetch data grafiknya lagi.
+                        */}
+                        <CashFlowChart key={`chart-${refreshKey}`} />
 
-                        {/* Left: Chart */}
-                        <CashFlowChart />
-
-                        {/* Right: Widgets */}
                         <div className="col-span-3 space-y-4">
                             <AccountsWidget
                                 accounts={accounts}
                                 loading={loading}
-                                incomeCategories={categoriyHook.incomeCt}
-                                expenseCategories={categoriyHook.expenseCt}
+                                incomeCategories={categoryHook.incomeCt}
+                                expenseCategories={categoryHook.expenseCt}
                                 error={error}
+                                // 6. Pass handler yang benar
+                                onTransactionSuccess={handleTransactionSuccess}
                             />
-                            <RecentTransactionsWidget />
+                            
+                            {/* Pasang key disini juga biar list transaksi update */}
+                            <RecentTransactionsWidget key={`tx-${refreshKey}`} />
                         </div>
-
                     </div>
                 </TabsContent>
             </Tabs>

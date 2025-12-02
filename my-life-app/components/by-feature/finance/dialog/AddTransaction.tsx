@@ -26,15 +26,17 @@ import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import { AccountResponse } from '@/types/dto/finance/response/account_response';
 import { CategoryResponse } from '@/types/dto/finance/response/category_response';
+import { TransactionRequest } from '@/types/dto/finance/request/transaction_request';
+import { TransactionService } from '@/services/finance/TransactionService'; // IMPORT SERVICE
 
-// UPDATE PROPS: Menerima kategori terpisah
 interface AddTransactionDialogProps {
   accounts: AccountResponse[];
+  onSuccess?: () => void;
   incomeCategories: CategoryResponse[];
   expenseCategories: CategoryResponse[];
 }
 
-// Helper untuk mendapatkan waktu lokal format YYYY-MM-DDTHH:mm
+// Helper: Get local ISO string for datetime-local input (YYYY-MM-DDTHH:mm)
 const getCurrentLocalISOString = () => {
   const now = new Date();
   now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
@@ -44,24 +46,27 @@ const getCurrentLocalISOString = () => {
 export function AddTransactionDialog({ 
   accounts, 
   incomeCategories, 
-  expenseCategories 
+  expenseCategories,
+  onSuccess
 }: AddTransactionDialogProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  // State Form
-  const [formData, setFormData] = useState({
+  // Initial State
+  const initialFormState: TransactionRequest = {
     type: 'EXPENSE',
     accountId: '',
-    targetAccountId: '',
-    categoryId: '',
-    amount: '',
+    targetAccountId: undefined, // Gunakan undefined biar bersih saat JSON stringify
+    categoryId: undefined,      
+    amount: 0,
     description: '',
-    date: getCurrentLocalISOString(),
-  });
+    transactionDate: getCurrentLocalISOString(),
+  };
 
-  // LOGIC: Menentukan list kategori mana yang ditampilkan berdasarkan Tipe Transaksi
+  const [formData, setFormData] = useState<TransactionRequest>(initialFormState);
+
+  // Logic: Filter kategori berdasarkan tipe transaksi
   const activeCategories = formData.type === 'INCOME' ? incomeCategories : expenseCategories;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -69,73 +74,83 @@ export function AddTransactionDialog({
     setLoading(true);
 
     try {
-      // 1. Validasi Basic
-      if (!formData.accountId || !formData.amount) {
-        toast.error('Akun asal dan jumlah uang wajib diisi');
+      // --- 1. Validasi Frontend ---
+      if (!formData.accountId) {
+        toast.error('Akun asal wajib dipilih');
+        setLoading(false); 
+        return;
+      }
+      if (formData.amount <= 0) {
+        toast.error('Jumlah uang harus lebih dari 0');
         setLoading(false);
         return;
       }
 
-      // 2. Validasi Conditional
+      // Validasi Conditional
       if (formData.type === 'TRANSFER' && !formData.targetAccountId) {
         toast.error('Tujuan transfer wajib dipilih');
         setLoading(false);
         return;
       }
+      if (formData.type === 'TRANSFER' && formData.accountId === formData.targetAccountId) {
+        toast.error('Tidak bisa transfer ke akun yang sama');
+        setLoading(false);
+        return;
+      }
+      // Validasi Kategori (Hanya untuk Income/Expense)
       if (formData.type !== 'TRANSFER' && !formData.categoryId) {
         toast.error('Kategori wajib dipilih');
         setLoading(false);
         return;
       }
 
-      // 3. Prepare Payload
-      const payload = {
-        accountId: formData.accountId,
-        type: formData.type,
-        amount: Number(formData.amount),
-        description: formData.description,
-        transactionDate: new Date(formData.date).toISOString(),
-        // Conditional Fields
-        ...(formData.type === 'TRANSFER'
-          ? { targetAccountId: formData.targetAccountId }
-          : { categoryId: formData.categoryId }),
+      // --- 2. Prepare Payload ---
+      // Clone object agar state asli tidak bermutasi
+      const payload: TransactionRequest = {
+        ...formData,
+        // Konversi string datetime-local kembali ke ISO-8601 UTC (Instant)
+        transactionDate: new Date(formData.transactionDate).toISOString(),
       };
 
-      // TODO: Integrasikan dengan TransactionService disini
-      console.log('Payload to Backend:', payload);
+      // BERSIHKAN FIELD YANG TIDAK RELEVAN
+      if (payload.type === 'TRANSFER') {
+        // Jika Transfer, hapus categoryId
+        delete (payload as any).categoryId;
+      } else {
+        // Jika Income/Expense, hapus targetAccountId
+        delete payload.targetAccountId;
+      }
 
-      // Simulasi Network Call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // --- 3. Call Backend API ---
+      await TransactionService.createTransaction(payload);
 
+      // --- 4. Success Handling ---
       toast.success('Transaksi berhasil disimpan!');
       setOpen(false);
-
-      // Reset Form ke default state
-      setFormData({
-        type: 'EXPENSE',
-        accountId: '',
-        targetAccountId: '',
-        categoryId: '',
-        amount: '',
-        description: '',
-        date: getCurrentLocalISOString(),
-      });
-
-      router.refresh();
+      setFormData(initialFormState); // Reset form
+      
+      if (onSuccess){
+        onSuccess();
+      } else {
+        window.location.reload(); // Fallback hard refresh agar data update instan
+      }
     } catch (error: any) {
-      console.error(error);
-      toast.error('Gagal menyimpan transaksi');
+      console.error("Transaction Error:", error);
+      // Coba ambil pesan error spesifik dari backend jika ada
+      const errorMessage = error.response?.data?.message || error.message || 'Gagal menyimpan transaksi';
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleChange = (key: string, value: string) => {
+  // Generic Change Handler
+  const handleChange = (key: keyof TransactionRequest, value: any) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
   };
 
   const handleSetNow = () => {
-    handleChange('date', getCurrentLocalISOString());
+    handleChange('transactionDate', getCurrentLocalISOString());
   };
 
   return (
@@ -164,9 +179,14 @@ export function AddTransactionDialog({
               <div className="col-span-3">
                 <Select
                   value={formData.type}
-                  onValueChange={(val) => {
-                    // Reset conditional fields saat ganti tipe
-                    setFormData(prev => ({ ...prev, type: val, categoryId: '', targetAccountId: '' }));
+                  onValueChange={(val: any) => {
+                    // Reset field conditional saat tipe berubah biar bersih
+                    setFormData(prev => ({ 
+                      ...prev, 
+                      type: val, 
+                      categoryId: undefined, 
+                      targetAccountId: undefined 
+                    }));
                   }}
                 >
                   <SelectTrigger>
@@ -193,7 +213,7 @@ export function AddTransactionDialog({
               </div>
             </div>
 
-            {/* 2. Source Account (Mapped from Props) */}
+            {/* 2. Source Account */}
             <div className="grid grid-cols-4 items-center gap-4">
               <Label className="text-right">From Account</Label>
               <div className="col-span-3">
@@ -215,7 +235,7 @@ export function AddTransactionDialog({
               </div>
             </div>
 
-            {/* 3. Conditional Fields (Category OR Target Account) */}
+            {/* 3. Conditional Fields */}
             {formData.type === 'TRANSFER' ? (
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label className="text-right">To Account</Label>
@@ -229,7 +249,7 @@ export function AddTransactionDialog({
                     </SelectTrigger>
                     <SelectContent>
                       {accounts
-                        .filter(acc => acc.id !== formData.accountId) // Prevent transfer to self
+                        .filter(acc => acc.id !== formData.accountId) // Filter agar tidak transfer ke diri sendiri
                         .map((acc) => (
                           <SelectItem key={acc.id} value={acc.id}>
                             {acc.name}
@@ -244,14 +264,14 @@ export function AddTransactionDialog({
                 <Label className="text-right">Category</Label>
                 <div className="col-span-3">
                   <Select
-                    value={formData.categoryId}
-                    onValueChange={(val) => handleChange('categoryId', val)}
+                    // Handle value: jika undefined/0/null set undefined agar placeholder muncul
+                    value={formData.categoryId ? String(formData.categoryId) : undefined}
+                    onValueChange={(val) => handleChange('categoryId', Number(val))}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
                     <SelectContent>
-                      {/* Render kategori berdasarkan tipe yang dipilih (activeCategories) */}
                       {activeCategories.length > 0 ? (
                         activeCategories.map((cat) => (
                           <SelectItem key={cat.id} value={String(cat.id)}>
@@ -260,7 +280,7 @@ export function AddTransactionDialog({
                         ))
                       ) : (
                         <div className="p-2 text-sm text-muted-foreground text-center">
-                          Tidak ada kategori tersedia
+                          Tidak ada kategori {formData.type.toLowerCase()}
                         </div>
                       )}
                     </SelectContent>
@@ -278,8 +298,9 @@ export function AddTransactionDialog({
                   type="number"
                   placeholder="0"
                   min="0"
-                  value={formData.amount}
-                  onChange={(e) => handleChange('amount', e.target.value)}
+                  // Tampilkan kosong jika 0 agar UX lebih bersih saat ngetik
+                  value={formData.amount === 0 ? '' : formData.amount}
+                  onChange={(e) => handleChange('amount', Number(e.target.value))}
                 />
               </div>
             </div>
@@ -292,8 +313,8 @@ export function AddTransactionDialog({
                   id="date"
                   type="datetime-local"
                   className="flex-1"
-                  value={formData.date}
-                  onChange={(e) => handleChange('date', e.target.value)}
+                  value={formData.transactionDate}
+                  onChange={(e) => handleChange('transactionDate', e.target.value)}
                 />
                 <Button
                   type="button"

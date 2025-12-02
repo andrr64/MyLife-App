@@ -23,11 +23,12 @@ interface AccountsWidgetProps {
   accounts: AccountResponse[];
   incomeCategories: CategoryResponse[];
   expenseCategories: CategoryResponse[];
+  onTransactionSuccess?: () => void;
   loading: boolean;
   error: string | null;
 }
 
-export function AccountsWidget({ accounts, incomeCategories, expenseCategories, loading, error }: AccountsWidgetProps) {
+export function AccountsWidget({ accounts, incomeCategories, expenseCategories, onTransactionSuccess, loading, error }: AccountsWidgetProps) {
 
   const formatIDR = (value: number) => {
     return new Intl.NumberFormat('id-ID', {
@@ -48,7 +49,12 @@ export function AccountsWidget({ accounts, incomeCategories, expenseCategories, 
           <AddAccountDialog />
 
           {accounts.length > 0 && (
-            <AddTransactionDialog accounts={accounts} incomeCategories={incomeCategories} expenseCategories={expenseCategories}/>
+            <AddTransactionDialog 
+              accounts={accounts} 
+              incomeCategories={incomeCategories} 
+              expenseCategories={expenseCategories}
+              onSuccess={onTransactionSuccess}
+            />
           )}
         </div>
       </CardHeader>
