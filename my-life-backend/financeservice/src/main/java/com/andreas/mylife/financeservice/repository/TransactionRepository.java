@@ -11,10 +11,21 @@ import com.andreas.mylife.financeservice.model.Transaction;
 
 import java.math.BigDecimal;
 import java.time.Instant; // PAKE INSTANT
+import java.util.List;
 import java.util.UUID;
 
 @Repository
 public interface TransactionRepository extends JpaRepository<Transaction, UUID> {
+
+
+    @Query("SELECT t FROM Transaction t " +
+            "WHERE t.userId = :userId " +
+            "ORDER BY t.transactionDate DESC " +
+            "LIMIT :limit ")
+    List<Transaction> recentTransaction(
+            @Param("limit") Long limit,
+            @Param("userId") UUID userId
+    );
 
     // 1. HISTORY TRANSAKSI UTAMA
     // Perbaikan:

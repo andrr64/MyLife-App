@@ -64,7 +64,9 @@ public class AccountServiceImpl implements AccountService {
     @Override
     @Transactional(readOnly = true)
     public List<AccountResponse> getAccountsByUserId(UUID userId) {
-        Sort sort = Sort.by(Sort.Order.asc("type"), Sort.Order.asc("name"));
+        Sort sort = Sort.by(
+                // Sort.Order.asc("type"),
+                Sort.Order.desc("balance"));
         return accountRepository.findByUserId(userId, sort)
                 .stream()
                 .map(this::mapToResponse)

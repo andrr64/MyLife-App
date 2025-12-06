@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -76,6 +77,11 @@ public class TransactionServiceImpl implements TransactionService {
                 .filter(t -> t.getUserId().equals(userId))
                 .orElseThrow(() -> new ResourceNotFoundException("Transaction not found"));
         return mapToResponse(transaction);
+    }
+
+    @Override
+    public List<TransactionResponse> getRecentTransaction(UUID userId, Long limit) {
+        return transactionRepository.recentTransaction(limit, userId).stream().map(this::mapToResponse).toList();
     }
 
     // --- PRIVATE METHODS ---

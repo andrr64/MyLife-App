@@ -15,6 +15,7 @@ import com.andreas.mylife.financeservice.dto.request.TransactionRequest;
 import com.andreas.mylife.financeservice.dto.response.TransactionResponse;
 import com.andreas.mylife.financeservice.services.TransactionService;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -48,5 +49,15 @@ public class TransactionController {
     public ApiResponse<TransactionResponse> getDetail(@PathVariable UUID id) {
         UUID userId = SecurityUtils.getCurrentUserId();
         return ApiResponse.success(transactionService.getTransactionDetail(userId, id));
+    }
+
+    @GetMapping("/recent")
+    public ApiResponse<List<TransactionResponse>> getRecentTransaction(
+            @RequestParam(defaultValue = "5") Long limit
+    ) {
+        return ApiResponse.success(transactionService.getRecentTransaction(
+                SecurityUtils.getCurrentUserId(),
+                limit
+        ));
     }
 }
