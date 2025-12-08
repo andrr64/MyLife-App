@@ -7,6 +7,7 @@ import com.andreas.mylife.financeservice.services.DashboardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
@@ -26,5 +27,13 @@ public class DashboardController {
         // Pass Instant.now() (Waktu server saat ini dalam UTC)
         // Service layer yang akan mengonversinya ke Zone Jakarta untuk perhitungan bulan
         return ApiResponse.success(dashboardService.getPrevMonthBalance(Instant.now(), userId));
+    }
+
+    @GetMapping("/current-balance-display")
+    public ApiResponse<String> getCurrentBalanceDisplay(
+            @RequestParam(required = false, defaultValue = "false") boolean hidden
+    ){
+        UUID userId = SecurityUtils.getCurrentUserId();
+        return ApiResponse.success(dashboardService.getCurrentBalanceDisplay(userId, hidden));
     }
 }

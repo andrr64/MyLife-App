@@ -27,4 +27,19 @@ public interface AccountRepository extends JpaRepository<Account, UUID> {
     // COALESCE(a.balance, 0) -> Memastikan kalau ada row tapi balance null (jarang terjadi kalau schema not null), tetap aman.
     @Query("SELECT COALESCE(SUM(a.balance), 0) FROM Account a WHERE a.userId = :userId")
     BigDecimal sumCurrentBalanceByUserId(@Param("userId") UUID userId);
+
+    @Query("""
+    SELECT 
+        CASE 
+            WHEN :flag = false
+                THEN CAST(COALESCE(SUM(a.balance), 0) AS string)
+            ELSE '*********'
+        END
+    FROM Account a
+    WHERE a.userId = :userId
+""")
+    String getCurrentBalanceDisplay(
+            @Param("userId") UUID userId,
+            @Param("flag") boolean flag
+    );
 }

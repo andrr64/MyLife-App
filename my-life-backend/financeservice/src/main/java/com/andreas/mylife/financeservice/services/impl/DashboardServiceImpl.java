@@ -57,4 +57,9 @@ public class DashboardServiceImpl implements DashboardService {
         // 4. Hitung Mundur: Saldo Awal Bulan = Saldo Sekarang - Mutasi Bulan Ini
         return currentBalance.subtract(mutationThisMonth);
     }
+
+    @Override
+    public String getCurrentBalanceDisplay(UUID userId, boolean flag) {
+        return accountRepository.getCurrentBalanceDisplay(userId, flag);
+    }
 }
