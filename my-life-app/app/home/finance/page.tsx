@@ -9,6 +9,7 @@ import { CashFlowChart } from '@/components/by-feature/finance/CashFlowChart';
 import { AccountsWidget } from '@/components/by-feature/finance/widgets/AccountWidget';
 import { RecentTransactionsWidget } from '@/components/by-feature/finance/widgets/RecentTransactionWidget';
 import { useCategories } from '@/hooks/finance/useCategory';
+import { useFinanceStats } from '@/hooks/finance/useFinanceStats';
 
 function FinancePage() {
     // 2. State untuk memaksa refresh komponen anak (Chart & Recent Transaction)
@@ -21,8 +22,8 @@ function FinancePage() {
         error, 
         refetch: refetchAccounts 
     } = useAccounts();
-    
     const categoryHook = useCategories();
+    const financeStatesHook = useFinanceStats();
 
     // Logic KPI
     const totalBalance = accounts.reduce((acc, curr) => acc + curr.balance, 0);
@@ -30,10 +31,11 @@ function FinancePage() {
     // 4. Buat handler terpusat saat transaksi sukses
     const handleTransactionSuccess = () => {
         console.log("Transaction Success Triggered!");
-        
+
         // A. Refresh data akun (agar saldo update)
         refetchAccounts();
-        
+        financeStatesHook.fetchData();
+
         // B. Ubah key untuk memaksa Chart & History re-mount (fetch ulang data baru)
         setRefreshKey(prev => prev + 1);
     };
@@ -50,7 +52,12 @@ function FinancePage() {
                 </TabsList>
 
                 <TabsContent value="overview" className="space-y-4">
-                    <FinanceStats totalBalance={totalBalance} isLoading={loading} />
+                    <FinanceStats 
+                        totalBalance={totalBalance} 
+                        isLoading={financeStatesHook.loading} 
+                        thisMonthIncome={financeStatesHook.thisMonthIncome.value}
+                        thisMonthExpense={financeStatesHook.thisMonthExpense.value}
+                    />
 
                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
                         {/* 5. Pasang key={refreshKey} disini.

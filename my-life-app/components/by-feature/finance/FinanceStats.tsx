@@ -25,9 +25,11 @@ const formatIDR = (value: number) => {
 interface FinanceStatsProps {
     totalBalance: number;
     isLoading: boolean;
+    thisMonthIncome: number;
+    thisMonthExpense: number;
 }
 
-export function FinanceStats({ totalBalance, isLoading }: FinanceStatsProps) {
+export function FinanceStats({ totalBalance, isLoading, thisMonthIncome, thisMonthExpense }: FinanceStatsProps) {
 
     // Variabel animasi untuk container (stagger children)
     const containerVariants = {
@@ -104,7 +106,7 @@ export function FinanceStats({ totalBalance, isLoading }: FinanceStatsProps) {
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
-                            {formatIDR(8250000)}
+                            {formatIDR(thisMonthIncome)}
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">+4 project baru</p>
                     </CardContent>
@@ -120,7 +122,7 @@ export function FinanceStats({ totalBalance, isLoading }: FinanceStatsProps) {
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold text-red-600 dark:text-red-400">
-                            {formatIDR(3400000)}
+                            {formatIDR(thisMonthExpense)}
                         </div>
                         <p className="text-xs text-muted-foreground flex items-center mt-1">
                             <span className="text-red-500 flex items-center mr-1">
