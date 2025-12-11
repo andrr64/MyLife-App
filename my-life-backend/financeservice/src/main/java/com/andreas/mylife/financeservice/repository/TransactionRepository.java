@@ -66,4 +66,35 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID> 
             @Param("startDate") Instant startDate,
             @Param("endDate") Instant endDate
     );
+
+    @Query("""
+    SELECT COALESCE(SUM(t.amount), 0)
+    FROM Transaction t
+    JOIN t.category c
+    WHERE t.userId = :userId
+      AND t.transactionDate BETWEEN :startDate AND :endDate
+      AND lower(c.name) LIKE lower(concat('%', :categoryName, '%'))
+    """)
+    BigDecimal sumByCategory(
+            @Param("userId") UUID userId,
+            @Param("startDate") Instant startDate,
+            @Param("endDate") Instant endDate,
+            @Param("categoryName") String categoryName
+    );
+
+    @Query("""
+        SELECT COALESCE(SUM(t.amount), 0)
+        FROM Transaction t
+        JOIN t.category c
+        WHERE t.userId = :userId
+          AND t.transactionDate BETWEEN :startDate AND :endDate
+          AND lower(c.type) LIKE lower(concat('%', :type, '%'))
+    """)
+    BigDecimal sumByType(
+        @Param("userId") UUID userId,
+        @Param("startDate") Instant startDate,
+        @Param("endDate") Instant endDate,
+        @Param("type") String type
+    );
+
 }

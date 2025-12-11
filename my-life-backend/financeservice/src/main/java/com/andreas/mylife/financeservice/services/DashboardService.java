@@ -11,5 +11,7 @@ import java.util.UUID;
 
 public interface DashboardService {
     BigDecimal getPrevMonthBalance(Instant refDate, UUID userId);
+    BigDecimal getIncomeThisMonth(UUID userId);
+    BigDecimal getExpenseThisMonth(UUID userId);
     String getCurrentBalanceDisplay(UUID userId, boolean flag);
 }

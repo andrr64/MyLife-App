@@ -1,6 +1,7 @@
 package com.andreas.mylife.financeservice.controller;
 
 import com.andreas.mylife.common.dto.ApiResponse;
+import com.andreas.mylife.common.dto.BigDecimalResponse;
 import com.andreas.mylife.common.util.SecurityUtils;
 import com.andreas.mylife.financeservice.common.ApiPath;
 import com.andreas.mylife.financeservice.services.DashboardService;
@@ -27,6 +28,32 @@ public class DashboardController {
         // Pass Instant.now() (Waktu server saat ini dalam UTC)
         // Service layer yang akan mengonversinya ke Zone Jakarta untuk perhitungan bulan
         return ApiResponse.success(dashboardService.getPrevMonthBalance(Instant.now(), userId));
+    }
+
+    @GetMapping("/income-this-month")
+    public ApiResponse<BigDecimalResponse> getIncomeThisMonth(){
+        UUID userId = SecurityUtils.getCurrentUserId();
+
+        // Pass Instant.now() (Waktu server saat ini dalam UTC)
+        // Service layer yang akan mengonversinya ke Zone Jakarta untuk perhitungan bulan
+        return ApiResponse.success(
+                BigDecimalResponse.builder()
+                        .value(dashboardService.getIncomeThisMonth(userId))
+                        .build()
+        );
+    }
+
+    @GetMapping("/expense-this-month")
+    public ApiResponse<BigDecimalResponse> getExpenseThisMonth(){
+        UUID userId = SecurityUtils.getCurrentUserId();
+
+        // Pass Instant.now() (Waktu server saat ini dalam UTC)
+        // Service layer yang akan mengonversinya ke Zone Jakarta untuk perhitungan bulan
+        return ApiResponse.success(
+                BigDecimalResponse.builder()
+                        .value(dashboardService.getExpenseThisMonth(userId))
+                        .build()
+        );
     }
 
     @GetMapping("/current-balance-display")

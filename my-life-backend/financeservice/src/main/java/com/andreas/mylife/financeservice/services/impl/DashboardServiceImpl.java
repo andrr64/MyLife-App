@@ -14,8 +14,6 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.TemporalAdjusters;
-import java.util.Collections;
-import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -56,6 +54,54 @@ public class DashboardServiceImpl implements DashboardService {
 
         // 4. Hitung Mundur: Saldo Awal Bulan = Saldo Sekarang - Mutasi Bulan Ini
         return currentBalance.subtract(mutationThisMonth);
+    }
+
+    @Override
+    public BigDecimal getIncomeThisMonth(UUID userId) {
+        // sekarang dalam zona waktu sistem
+        ZonedDateTime now = ZonedDateTime.now();
+
+        // awal bulan (tanggal 1, jam 00:00)
+        Instant startOfMonth = now.withDayOfMonth(1)
+                .toLocalDate()
+                .atStartOfDay(now.getZone())
+                .toInstant();
+
+        // akhir bulan (hari terakhir bulan ini, jam 23:59:59.999)
+        Instant endOfMonth = now.withDayOfMonth(now.toLocalDate().lengthOfMonth())
+                .withHour(23).withMinute(59).withSecond(59).withNano(999_000_000)
+                .toInstant();
+
+        return transactionRepository.sumByType(
+                userId,
+                startOfMonth,
+                endOfMonth,
+                "income"
+        );
+    }
+
+    @Override
+    public BigDecimal getExpenseThisMonth(UUID userId) {
+        // sekarang dalam zona waktu sistem
+        ZonedDateTime now = ZonedDateTime.now();
+
+        // awal bulan (tanggal 1, jam 00:00)
+        Instant startOfMonth = now.withDayOfMonth(1)
+                .toLocalDate()
+                .atStartOfDay(now.getZone())
+                .toInstant();
+
+        // akhir bulan (hari terakhir bulan ini, jam 23:59:59.999)
+        Instant endOfMonth = now.withDayOfMonth(now.toLocalDate().lengthOfMonth())
+                .withHour(23).withMinute(59).withSecond(59).withNano(999_000_000)
+                .toInstant();
+
+        return transactionRepository.sumByType(
+                userId,
+                startOfMonth,
+                endOfMonth,
+                "expense"
+        );
     }
 
     @Override
