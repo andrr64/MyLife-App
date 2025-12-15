@@ -20,8 +20,10 @@ export default function HomeLayout({ children }: { children: React.ReactNode }) 
   useEffect(() => {
     const check = async () => {
       if (isUnauthorized) {
+        if (isInitialized){
+          toast.error("Unauthorized: re-login!")
+        }
         reset();
-        toast.error("Unauthorized: re-login!")
         await AuthService.logout();
         router.replace(URLPath.auth.login);
       }
