@@ -66,7 +66,7 @@ public class DashboardController {
         return ApiResponse.success(dashboardService.getCurrentBalanceDisplay(userId, hidden));
     }
 
-    @GetMapping("/this-month-expense-summary-by-category")
+    @GetMapping("/chart/pie/this-month-expense-by-category")
     public ApiResponse<List<ValueByCategory<BigDecimal>>> getThisMonthExpenseSummaryByCategoryname(){
         return ApiResponse.success(
                 dashboardService.getThisMonthExpenseSummary(
