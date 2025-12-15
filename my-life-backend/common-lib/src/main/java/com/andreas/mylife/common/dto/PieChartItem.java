@@ -6,15 +6,12 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
-
 @Data // Gunakan @Data agar Getter, Setter, toString, dll otomatis ada
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ValueByCategory <T> {
+public class PieChartItem<T> {
     String key;
     T value;
-    BigDecimal percentage;
 }

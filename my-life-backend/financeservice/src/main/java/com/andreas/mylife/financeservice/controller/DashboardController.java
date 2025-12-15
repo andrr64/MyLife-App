@@ -2,7 +2,7 @@ package com.andreas.mylife.financeservice.controller;
 
 import com.andreas.mylife.common.dto.ApiResponse;
 import com.andreas.mylife.common.dto.BigDecimalResponse;
-import com.andreas.mylife.common.dto.ValueByCategory;
+import com.andreas.mylife.common.dto.PieChartItem;
 import com.andreas.mylife.common.util.SecurityUtils;
 import com.andreas.mylife.financeservice.common.ApiPath;
 import com.andreas.mylife.financeservice.services.DashboardService;
@@ -67,9 +67,9 @@ public class DashboardController {
     }
 
     @GetMapping("/chart/pie/this-month-expense-by-category")
-    public ApiResponse<List<ValueByCategory<BigDecimal>>> getThisMonthExpenseSummaryByCategoryname(){
+    public ApiResponse<List<PieChartItem<BigDecimal>>> getThisMonthExpenseSummaryByCategoryname(){
         return ApiResponse.success(
-                dashboardService.getThisMonthExpenseSummary(
+                dashboardService.getThisMonthExpensePieChartByCategoryName(
                         SecurityUtils.getCurrentUserId()
                 )
         );

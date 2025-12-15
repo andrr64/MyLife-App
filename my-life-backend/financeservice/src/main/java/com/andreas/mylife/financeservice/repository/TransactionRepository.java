@@ -1,6 +1,6 @@
 package com.andreas.mylife.financeservice.repository;
 
-import com.andreas.mylife.common.dto.ValueByCategory;
+import com.andreas.mylife.common.dto.PieChartItem;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -112,7 +112,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID> 
             AND c.type_id = 0
         GROUP BY c.name
     """)
-    List<ValueByCategory<BigDecimal>> getThisMonthExpenseSummaryByCategory(
+    List<PieChartItem<BigDecimal>> getExpensePieChartByCategoryName(
             @Param("userId") UUID userId,
             @Param("startDate") Instant startDate,
             @Param("endDate") Instant endDate

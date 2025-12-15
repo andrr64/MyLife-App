@@ -1,9 +1,6 @@
 package com.andreas.mylife.financeservice.services.impl;
 
-import com.andreas.mylife.common.dto.ValueByCategory;
-import com.andreas.mylife.financeservice.dto.response.CashFlowChartResponse;
-import com.andreas.mylife.financeservice.model.CategoryType;
-import com.andreas.mylife.financeservice.model.CategoryTypeId;
+import com.andreas.mylife.common.dto.PieChartItem;
 import com.andreas.mylife.financeservice.repository.AccountRepository;
 import com.andreas.mylife.financeservice.repository.TransactionRepository;
 import com.andreas.mylife.financeservice.services.DashboardService;
@@ -114,7 +111,7 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     @Override
-    public List<ValueByCategory<BigDecimal>> getThisMonthExpenseSummary(UUID userId) {
+    public List<PieChartItem<BigDecimal>> getThisMonthExpensePieChartByCategoryName(UUID userId) {
         // sekarang dalam zona waktu sistem
         ZonedDateTime now = ZonedDateTime.now();
 
@@ -128,6 +125,6 @@ public class DashboardServiceImpl implements DashboardService {
         Instant endOfMonth = now.withDayOfMonth(now.toLocalDate().lengthOfMonth())
                 .withHour(23).withMinute(59).withSecond(59).withNano(999_000_000)
                 .toInstant();
-        return transactionRepository.getThisMonthExpenseSummaryByCategory(userId, startOfMonth, endOfMonth);
+        return transactionRepository.getExpensePieChartByCategoryName(userId, startOfMonth, endOfMonth);
     }
 }
