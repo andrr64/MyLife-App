@@ -42,24 +42,23 @@ function FinancePage() {
                         thisMonthExpense={stats.expense}
                     />
 
-                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-                        <div className='col-span-3'>
-                            {/* Uses refreshKey to force redraw when data updates */}
-                            <ExpenseDonutChart key={`chart-${refreshKey}`} data={expenseSummary} />
-                        </div>
+                    {/* Updated Layout: 2x2 Grid Structure */}
+                    <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+                        {/* Top Left: Chart */}
+                        <ExpenseDonutChart key={`chart-${refreshKey}`} data={expenseSummary} />
 
-                        <div className="col-span-3 space-y-4">
-                            <AccountsWidget
-                                accounts={accounts}
-                                loading={isLoading}
-                                incomeCategories={incomeCategories}
-                                expenseCategories={expenseCategories}
-                                error={error}
-                                onTransactionSuccess={handleTransactionSuccess}
-                            />
-                            
+                        {/* Top Right: Accounts */}
+                        <AccountsWidget
+                            accounts={accounts}
+                            loading={isLoading}
+                            incomeCategories={incomeCategories}
+                            expenseCategories={expenseCategories}
+                            error={error}
+                            onTransactionSuccess={handleTransactionSuccess}
+                        />
+                        
+                        {/* Bottom: Transactions (Full Width) */}
                             <RecentTransactionsWidget key={`tx-${refreshKey}`} />
-                        </div>
                     </div>
                 </TabsContent>
             </Tabs>

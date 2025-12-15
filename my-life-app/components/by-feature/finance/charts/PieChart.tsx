@@ -41,26 +41,33 @@ export function ExpenseDonutChart({
   description = "Interactive visualization of expenses",
   currencySymbol = "Rp",
 }: ExpenseDonutChartProps) {
-  
+
   // 1. Memoize Total Calculation
   const totalValue = React.useMemo(() => {
     return data.reduce((acc, curr) => acc + curr.value, 0)
   }, [data])
 
   // 2. Transform & Sort Data (Largest first)
-  // We explicitly assign colors here based on index to ensure consistency
+  // Generate dynamic soft colors based on Golden Angle for better distribution
   const chartData = React.useMemo(() => {
     return [...data]
       .sort((a, b) => b.value - a.value)
-      .map((item, index) => ({
-        category: item.key,
-        value: item.value,
-        fill: `hsl(var(--chart-${(index % 5) + 1}))`, // Cycle through chart-1 to chart-5
-        percentage: ((item.value / totalValue) * 100).toFixed(1),
-      }))
+      .map((item, index) => {
+        // Golden Angle approximation for distinct yet cohesive colors
+        const hue = (index * 137.5) % 360;
+        // HSL: Saturation 60%, Lightness 55% (Adaptive for Dark/Light mode)
+        const fillColor = `hsl(${hue}, 60%, 55%)`;
+
+        return {
+          category: item.key,
+          value: item.value,
+          fill: fillColor,
+          percentage: ((item.value / totalValue) * 100).toFixed(1),
+        }
+      })
   }, [data, totalValue])
 
-  // 3. Generate Dynamic Config for Recharts
+  // 3. Generate Dynamic Config for Recharts/Shadcn
   const chartConfig = React.useMemo(() => {
     const config: ChartConfig = {
       value: { label: "Expense" },
@@ -91,7 +98,7 @@ export function ExpenseDonutChart({
         <CardTitle>{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
       </CardHeader>
-      
+
       <CardContent className="flex-1 pb-0">
         <ChartContainer
           config={chartConfig}
@@ -113,21 +120,51 @@ export function ExpenseDonutChart({
               onMouseLeave={() => setActiveIndex(null)}
               // Custom active shape to make the hovered slice "pop" slightly
               activeShape={({ outerRadius = 0, ...props }: PieSectorDataItem) => (
-                <Sector {...props} outerRadius={outerRadius + 6} />
+                <Sector {...props} outerRadius={outerRadius + 8} />
               )}
             >
               <Label
                 content={({ viewBox }) => {
                   if (viewBox && "cx" in viewBox && "cy" in viewBox) {
-                    // Logic: Show "Total" by default, or the specific slice data on hover
-                    const activeItem = activeIndex !== null ? chartData[activeIndex] : null
-                    const mainText = activeItem 
-                        ? formatCurrency(activeItem.value)
-                        : formatCurrency(totalValue)
-                    const subText = activeItem 
-                        ? activeItem.category 
-                        : "Total Expenses"
+                    // --- HOVER STATE ---
+                    if (activeIndex !== null && chartData[activeIndex]) {
+                      const activeItem = chartData[activeIndex];
+                      return (
+                        <text
+                          x={viewBox.cx}
+                          y={viewBox.cy}
+                          textAnchor="middle"
+                          dominantBaseline="middle"
+                        >
+                          {/* Line 1: Category Name */}
+                          <tspan
+                            x={viewBox.cx}
+                            y={(viewBox.cy || 0) - 18}
+                            className="fill-muted-foreground text-xs font-medium"
+                          >
+                            {activeItem.category}
+                          </tspan>
+                          {/* Line 2: Amount */}
+                          <tspan
+                            x={viewBox.cx}
+                            y={(viewBox.cy || 0) + 4}
+                            className="fill-foreground text-xl font-bold"
+                          >
+                            {formatCurrency(activeItem.value)}
+                          </tspan>
+                          {/* Line 3: Percentage */}
+                          <tspan
+                            x={viewBox.cx}
+                            y={(viewBox.cy || 0) + 24}
+                            className="fill-muted-foreground text-xs"
+                          >
+                            {activeItem.percentage}%
+                          </tspan>
+                        </text>
+                      )
+                    }
 
+                    // --- DEFAULT STATE (Total) ---
                     return (
                       <text
                         x={viewBox.cx}
@@ -140,14 +177,14 @@ export function ExpenseDonutChart({
                           y={viewBox.cy}
                           className="fill-foreground text-2xl font-bold"
                         >
-                          {mainText}
+                          {formatCurrency(totalValue)}
                         </tspan>
                         <tspan
                           x={viewBox.cx}
                           y={(viewBox.cy || 0) + 24}
                           className="fill-muted-foreground text-sm font-medium"
                         >
-                          {subText}
+                          Total Expenses
                         </tspan>
                       </text>
                     )
@@ -159,33 +196,30 @@ export function ExpenseDonutChart({
         </ChartContainer>
       </CardContent>
 
-      {/* Scrollable List for detailed breakdown. 
-         This is better than a Legend for large datasets.
-      */}
+      {/* Scrollable List for detailed breakdown. */}
       <CardFooter className="flex-col gap-2 pt-4">
         <div className="flex w-full items-center justify-between text-xs text-muted-foreground mb-2">
-           <span>Category</span>
-           <span>Amount (%)</span>
+          <span>Category</span>
+          <span>Amount (%)</span>
         </div>
-        <Separator className="mb-2"/>
-        
+        <Separator className="mb-2" />
+
         <ScrollArea className="h-[160px] w-full pr-4">
           <div className="flex flex-col gap-3">
             {chartData.map((item) => (
-              <div 
-                key={item.category} 
-                className={`flex items-center justify-between text-sm transition-opacity duration-200 ${
-                  activeIndex !== null && activeIndex !== chartData.indexOf(item) 
-                    ? "opacity-30" 
+              <div
+                key={item.category}
+                className={`flex items-center justify-between text-sm transition-opacity duration-200 ${activeIndex !== null && activeIndex !== chartData.indexOf(item)
+                    ? "opacity-30"
                     : "opacity-100"
-                }`}
+                  }`}
                 onMouseEnter={() => setActiveIndex(chartData.indexOf(item))}
                 onMouseLeave={() => setActiveIndex(null)}
               >
                 <div className="flex items-center gap-2">
-                  <div 
-                    className="h-3 w-3 rounded-full shadow-sm" 
-                    style={{ backgroundColor: item.fill }} 
+                  <div
+                    className="h-3 w-3 rounded-full shadow-sm"
+                    style={{ backgroundColor: item.fill }}
                   />
                   <span className="font-medium truncate max-w-[120px]" title={item.category}>
                     {item.category}
@@ -201,7 +235,7 @@ export function ExpenseDonutChart({
             ))}
           </div>
         </ScrollArea>
-        
+
         <div className="mt-4 flex items-center gap-2 text-xs leading-none text-muted-foreground">
           <TrendingUp className="h-4 w-4" />
           <span>Top expense: <span className="font-medium text-foreground">{chartData[0]?.category}</span> ({chartData[0]?.percentage}%)</span>
