@@ -33,6 +33,9 @@ public class Category {
     @Column(length = 10)
     private CategoryType type;
 
+    @Column(nullable = false)
+    private Short type_id;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false, nullable = false)
     private Instant createdAt; // Ubah ke Instant

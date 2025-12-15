@@ -1,5 +1,6 @@
 package com.andreas.mylife.financeservice.services;
 
+import com.andreas.mylife.common.dto.ValueByCategory;
 import com.andreas.mylife.financeservice.dto.response.CashFlowChartResponse;
 import org.springframework.cglib.core.Local;
 
@@ -14,4 +15,5 @@ public interface DashboardService {
     BigDecimal getIncomeThisMonth(UUID userId);
     BigDecimal getExpenseThisMonth(UUID userId);
     String getCurrentBalanceDisplay(UUID userId, boolean flag);
+    List<ValueByCategory<BigDecimal>> getThisMonthExpenseSummary(UUID userId);
 }

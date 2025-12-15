@@ -1,6 +1,9 @@
 package com.andreas.mylife.financeservice.services.impl;
 
+import com.andreas.mylife.common.dto.ValueByCategory;
 import com.andreas.mylife.financeservice.dto.response.CashFlowChartResponse;
+import com.andreas.mylife.financeservice.model.CategoryType;
+import com.andreas.mylife.financeservice.model.CategoryTypeId;
 import com.andreas.mylife.financeservice.repository.AccountRepository;
 import com.andreas.mylife.financeservice.repository.TransactionRepository;
 import com.andreas.mylife.financeservice.services.DashboardService;
@@ -14,6 +17,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.TemporalAdjusters;
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -76,7 +80,7 @@ public class DashboardServiceImpl implements DashboardService {
                 userId,
                 startOfMonth,
                 endOfMonth,
-                "income"
+                (short) 1
         );
     }
 
@@ -100,12 +104,30 @@ public class DashboardServiceImpl implements DashboardService {
                 userId,
                 startOfMonth,
                 endOfMonth,
-                "expense"
+                (short) 0
         );
     }
 
     @Override
     public String getCurrentBalanceDisplay(UUID userId, boolean flag) {
         return accountRepository.getCurrentBalanceDisplay(userId, flag);
+    }
+
+    @Override
+    public List<ValueByCategory<BigDecimal>> getThisMonthExpenseSummary(UUID userId) {
+        // sekarang dalam zona waktu sistem
+        ZonedDateTime now = ZonedDateTime.now();
+
+        // awal bulan (tanggal 1, jam 00:00)
+        Instant startOfMonth = now.withDayOfMonth(1)
+                .toLocalDate()
+                .atStartOfDay(now.getZone())
+                .toInstant();
+
+        // akhir bulan (hari terakhir bulan ini, jam 23:59:59.999)
+        Instant endOfMonth = now.withDayOfMonth(now.toLocalDate().lengthOfMonth())
+                .withHour(23).withMinute(59).withSecond(59).withNano(999_000_000)
+                .toInstant();
+        return transactionRepository.getThisMonthExpenseSummaryByCategory(userId, startOfMonth, endOfMonth);
     }
 }

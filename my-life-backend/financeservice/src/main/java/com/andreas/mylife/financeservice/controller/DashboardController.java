@@ -2,6 +2,7 @@ package com.andreas.mylife.financeservice.controller;
 
 import com.andreas.mylife.common.dto.ApiResponse;
 import com.andreas.mylife.common.dto.BigDecimalResponse;
+import com.andreas.mylife.common.dto.ValueByCategory;
 import com.andreas.mylife.common.util.SecurityUtils;
 import com.andreas.mylife.financeservice.common.ApiPath;
 import com.andreas.mylife.financeservice.services.DashboardService;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -62,5 +64,14 @@ public class DashboardController {
     ){
         UUID userId = SecurityUtils.getCurrentUserId();
         return ApiResponse.success(dashboardService.getCurrentBalanceDisplay(userId, hidden));
+    }
+
+    @GetMapping("/this-month-expense-summary-by-category")
+    public ApiResponse<List<ValueByCategory<BigDecimal>>> getThisMonthExpenseSummaryByCategoryname(){
+        return ApiResponse.success(
+                dashboardService.getThisMonthExpenseSummary(
+                        SecurityUtils.getCurrentUserId()
+                )
+        );
     }
 }
