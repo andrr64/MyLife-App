@@ -99,10 +99,9 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID> 
     );
 
     @Query("""
-        SELECT new com.andreas.mylife.common.dto.ValueByCategory(
+        SELECT new com.andreas.mylife.common.dto.PieChartItem(
             c.name,
-            COALESCE(SUM(t.amount), 0),
-            null
+            COALESCE(SUM(t.amount), 0)
         )
         FROM Transaction t
         JOIN t.category c
